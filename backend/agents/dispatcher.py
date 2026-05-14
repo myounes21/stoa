@@ -1,9 +1,13 @@
 from langchain_groq import ChatGroq
 from langchain_core.prompts import ChatPromptTemplate
-from backend.config import settings
-from backend.models.schemas import ArenaManifest, TeamMission
-from backend.models.state import STOAState
 
+from backend.config import settings
+from backend.models.schemas import ArenaManifest, ArenaManifestLLM
+from backend.models.state import STOAState
+from backend.utils.prompts import load_prompt
+
+
+_prompt = load_prompt("dispatcher.yaml", "dispatcher")
 
 llm = ChatGroq(
     model=settings.GROQ_LLM_MODEL,
@@ -11,27 +15,18 @@ llm = ChatGroq(
     temperature=0.3
 )
 
-structured_llm = llm.with_structured_output(ArenaManifest)
+structured_llm = llm.with_structured_output(ArenaManifestLLM)
 
 DISPATCHER_PROMPT = ChatPromptTemplate.from_messages([
-    ("system", """You are the STOA Dispatcher. Your job is to analyze a user query and extract two opposing debate positions.
-
-Given a query, produce an ArenaManifest with:
-- A clear topic
-- Team A with a name, stance, and mission goal
-- Team B with a name, stance, and mission goal
-
-Both teams must have clearly opposing positions. Be specific and aggressive in defining each team's stance and mission goal."""),
-    ("human", "{query}")
+    ("system", _prompt["system"]),
+    ("human", _prompt["human"])
 ])
 
 dispatcher_chain = DISPATCHER_PROMPT | structured_llm
 
 
 def needs_clarification(query: str) -> bool:
-    """Check if the query is too vague to extract two positions."""
-    vague_indicators = len(query.split()) < 4
-    return vague_indicators
+    return len(query.split()) < 4
 
 
 def dispatcher_node(state: STOAState) -> dict:
@@ -46,7 +41,9 @@ def dispatcher_node(state: STOAState) -> dict:
             "clarification_response": None
         }
 
-    manifest = dispatcher_chain.invoke({"query": query})
+    llm_output = dispatcher_chain.invoke({"query": query})
+
+    manifest = ArenaManifest(**llm_output.model_dump())
 
     return {
         "clarification_needed": False,

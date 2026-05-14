@@ -5,35 +5,22 @@ from backend.config import settings
 
 
 class TeamMission(BaseModel):
-    """
-    Defines the identity and strategy for a specific side in the STOA Arena.
-    """
-    team_name: str = Field(description="The name of the contender (e.g., 'React', 'Team Monolith')")
-    stance: str = Field(description="The core philosophy or technical position this team must defend.")
-    mission_goal: str = Field(description="The specific 'Win Condition' — what the agent needs to prove to the Judge.")
+    team_name: str = Field(description="The name of the contender (e.g., 'Team Python')")
+    stance: str = Field(description="A single declarative sentence the team will defend.")
+    mission_goal: str = Field(description="What the team must prove to WIN — specific, not vague.")
 
 
-class ArenaManifest(BaseModel):
-    """
-    The Single Source of Truth for a STOA adversarial session.
-    This JSON governs exactly how the debate will unfold.
-    """
-    session_id: str = Field(
-        default_factory=lambda: str(uuid.uuid4()),
-        description="Unique identifier for the session."
-    )
-
-    # The Conflict
+class ArenaManifestLLM(BaseModel):
+    """What the LLM is responsible for generating — nothing else."""
     topic: str = Field(description="The high-level subject or user question.")
-
-    # The Contenders
     team_a: TeamMission
     team_b: TeamMission
-
-    # Governance
     judicial_focus: List[str] = Field(
-        default=["logical consistency", "factual accuracy", "rebuttal quality"],
         description="The rubric the Judge will use to score the debate."
     )
 
+
+class ArenaManifest(ArenaManifestLLM):
+    """Full manifest with system-controlled fields added after LLM generation."""
+    session_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     max_rounds: int = Field(default_factory=lambda: settings.MAX_ROUNDS)
