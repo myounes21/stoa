@@ -1,4 +1,3 @@
-from langchain_groq import ChatGroq
 from langchain_core.prompts import ChatPromptTemplate
 
 from backend.config import settings
@@ -6,16 +5,11 @@ from backend.models.schemas import ArenaManifest, DispatcherOutput
 from backend.models.state import STOAState
 from backend.utils.prompts import load_prompt
 
+from backend.llm.groq import dispatcher_llm
+
 _prompt = load_prompt("dispatcher.yaml", "dispatcher")
 
-llm = ChatGroq(
-    model=settings.GROQ_LLM_MODEL,
-    api_key=settings.GROQ_API_KEY,
-    temperature=0.3
-)
-
-# Bind to the new wrapper schema
-structured_llm = llm.with_structured_output(DispatcherOutput)
+structured_llm = dispatcher_llm.with_structured_output(DispatcherOutput)
 
 DISPATCHER_PROMPT = ChatPromptTemplate.from_messages([
     ("system", _prompt["system"]),
