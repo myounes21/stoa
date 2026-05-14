@@ -2,7 +2,7 @@ from backend.agents.dispatcher import dispatcher_node
 from backend.models.state import STOAState
 
 state: STOAState = {
-    "user_query": "Is Python better than JavaScript for backend development?",
+    "user_query": "MESSI VS RONALDO?",
     "arena_manifest": None,
     "clarification_needed": None,
     "clarification_response": None,
