@@ -17,6 +17,10 @@ class STOAState(TypedDict):
     team_a_strategy: Optional[str]
     team_a_evidence: Optional[str]
     team_a_critic_status: Optional[str]   # "APPROVED" / "REJECTED"
+
+    team_a_critic_decision: Optional[str]  # Full CriticDecision JSON
+    team_b_critic_decision: Optional[str]
+
     team_a_retry_count: int
     team_a_weakness_flag: bool
     team_a_argument: Optional[str]

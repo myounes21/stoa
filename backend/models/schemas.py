@@ -1,5 +1,5 @@
 import uuid
-from typing import List, Optional
+from typing import List, Optional, Literal
 from pydantic import BaseModel, Field
 from backend.config import settings
 
@@ -63,8 +63,27 @@ class EvidenceItem(BaseModel):
     extracted_fact: str = Field(
         description="Your interpretation of the raw_snippet. Must be grounded in raw_snippet only."
     )
+
+
 class EvidenceDocument(BaseModel):
     """Compiled research backing the team's strategy."""
     research_summary: str = Field(description="A brief summary of findings.")
     evidence_list: List[EvidenceItem] = Field(description="List of verified claims and their sources.")
     failed_searches: List[str] = Field(description="Directives that yielded no useful results (if any).")
+
+
+class CriticDecision(BaseModel):
+    status: Literal["APPROVED", "REJECTED"] = Field(
+        description="APPROVED if evidence is strong enough to proceed. REJECTED if core claims are unsupported or hallucinated."
+    )
+    reasoning: str = Field(
+        description="Specific explanation of why the evidence was approved or rejected."
+    )
+    weak_points: List[str] = Field(
+        description="Claims that are weakly supported even if status is APPROVED. Empty list if none.",
+        default_factory=list
+    )
+    retry_directive: Optional[str] = Field(
+        description="If REJECTED, a specific new search query the Researcher should try instead. None if APPROVED.",
+        default=None
+    )
