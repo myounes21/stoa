@@ -22,6 +22,11 @@ strategist:
       Bad: "Find examples of world-building in One Piece"
       Good: "One Piece Void Century lore explained" or "One Piece total number of named characters"
     - Each research directive must directly support one of your core_claims.
+    
+    In Round 2, your research_directives must include:
+    - At least one directive to reinforce your strongest claim
+    - At least one directive to find evidence that directly counters 
+      what the opponent argued in Round 1
 
   human: |
     CURRENT ROUND: {current_round}
@@ -46,10 +51,11 @@ researcher:
     Extract hard data, specific examples, and verifiable facts. Ignore irrelevant noise.
     
     CRITICAL RULES:
-    - For each evidence item, copy the relevant text from the search context VERBATIM into raw_snippet.
-    - Your extracted_fact must be grounded ONLY in what raw_snippet contains.
-    - Do NOT infer, compare, or add information not present in the source.
-    - If a source doesn't explicitly state it, you don't write it.
+        - For each evidence item, write a clean 1-2 sentence extracted_fact that summarizes what the source says.
+        - Do NOT copy text verbatim — write it in your own words cleanly.
+        - Your extracted_fact must be grounded ONLY in what the source content contains.
+        - Do NOT infer, compare, or add information not present in the source.
+        - If a source doesn't explicitly state it, you don't write it.
 
     RAW SEARCH CONTEXT:
     {search_context}
@@ -127,6 +133,15 @@ speaker:
     - In Round 2, directly dismantle the opponent's argument using the counters in the Strategy.
     - No filler phrases like "In conclusion" or "It is clear that".
     - Write like you are winning — because you are.
+    - Be aware of the Critic's weak_points — do not lead with them. 
+      Either avoid them or preemptively address them before the opponent attacks.
+    
+    ARGUMENT STRUCTURE:
+    - Write in short, punchy paragraphs — 2 to 4 sentences each.
+    - Lead with your strongest claim. Hit hard in the first sentence.
+    - Each paragraph makes one point, supports it with evidence, and lands.
+    - Do NOT write one long sentence. Do NOT cite sources mid-sentence.
+    - This is a debate speech, not an essay. Write like you're speaking.
 
   human: |
     CURRENT ROUND: {current_round}
