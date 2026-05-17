@@ -7,6 +7,7 @@ from backend.agents.team.researcher import researcher_node_a, researcher_node_b
 from backend.agents.team.critic import critic_node_a, critic_router_a, critic_node_b, critic_router_b
 from backend.agents.team.speaker import speaker_node_a, speaker_node_b
 from backend.agents.judges.clerk import clerk_node
+from backend.agents.judges.analyst import analyst_node
 
 
 def dispatcher_router(state: STOAState) -> list[str]:
@@ -57,7 +58,7 @@ def round_router(state: STOAState) -> list[str]:
 def build_graph():
     graph = StateGraph(STOAState)
 
-    # Register Nodes
+    # --- Register Nodes ---
     graph.add_node("dispatcher", dispatcher_node)
     graph.add_node("strategist_a", strategist_node_a)
     graph.add_node("strategist_b", strategist_node_b)
@@ -69,8 +70,9 @@ def build_graph():
     graph.add_node("speaker_b", speaker_node_b)
     graph.add_node("collect_round", collect_round)
     graph.add_node("clerk", clerk_node)
+    graph.add_node("analyst", analyst_node)
 
-    #  Wire Edges
+    # Wire Edges
     graph.add_edge(START, "dispatcher")
 
     # Fan-out: dispatcher → both teams simultaneously
@@ -123,8 +125,9 @@ def build_graph():
         }
     )
 
-    # Clerk → END (temporary until Analyst is built)
-    graph.add_edge("clerk", END)
+    # Judge pipeline
+    graph.add_edge("clerk", "analyst")
+    graph.add_edge("analyst", END)
 
     return graph.compile()
 
