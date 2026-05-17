@@ -1,9 +1,10 @@
 import json
 from backend.core.graph import stoa_graph
 
+
 def main():
     print("=" * 50)
-    print("STOA END-TO-END TEST: TEAM A FULL FLOW")
+    print("STOA END-TO-END TEST: BOTH TEAMS")
     print("=" * 50)
 
     initial_state = {
@@ -40,22 +41,37 @@ def main():
         print("FINAL STATE SUMMARY")
         print("=" * 50)
 
-        print(f"\nClarification needed: {final_state.get('clarification_needed')}")
-        print(f"Current round: {final_state.get('current_round')}")
-        print(f"Retry count: {final_state.get('team_a_retry_count')}")
-        print(f"Weakness flag: {final_state.get('team_a_weakness_flag')}")
-        print(f"Critic status: {final_state.get('team_a_critic_status')}")
+        print(f"\nTeam A critic status : {final_state.get('team_a_critic_status')}")
+        print(f"Team A retry count   : {final_state.get('team_a_retry_count')}")
+        print(f"Team A weakness flag : {final_state.get('team_a_weakness_flag')}")
 
-        argument = final_state.get("team_a_argument")
-        if argument:
-            print("\n[TEAM A ARGUMENT]\n")
-            print(argument)
+        print(f"\nTeam B critic status : {final_state.get('team_b_critic_status')}")
+        print(f"Team B retry count   : {final_state.get('team_b_retry_count')}")
+        print(f"Team B weakness flag : {final_state.get('team_b_weakness_flag')}")
+
+        argument_a = final_state.get("team_a_argument")
+        argument_b = final_state.get("team_b_argument")
+
+        if argument_a:
+            print("\n" + "=" * 50)
+            print("TEAM A ARGUMENT")
+            print("=" * 50)
+            print(argument_a)
         else:
-            print("\nNo argument produced.")
+            print("\nNo Team A argument produced.")
+
+        if argument_b:
+            print("\n" + "=" * 50)
+            print("TEAM B ARGUMENT")
+            print("=" * 50)
+            print(argument_b)
+        else:
+            print("\nNo Team B argument produced.")
 
     except Exception as e:
         print(f"\nError: {e}")
         raise
+
 
 if __name__ == "__main__":
     main()
