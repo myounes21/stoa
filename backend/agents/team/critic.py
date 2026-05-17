@@ -29,10 +29,24 @@ def run_critic(state: STOAState, team_id: str) -> dict:
     # Force approve if max retries reached — no LLM call needed
     if retry_count >= 2:
         print(f"\n[Critic {team_id}] Max retries reached. Force approving with weakness flag.")
+        force_decision = CriticDecision(
+            status="APPROVED",
+            reasoning="Force approved after maximum retries. Evidence quality could not be improved.",
+            weak_points=["Evidence failed Critic audit twice — treat all claims with caution"],
+            retry_directive=None
+        )
         if team_id == "A":
-            return {"team_a_critic_status": "APPROVED", "team_a_weakness_flag": True}
+            return {
+                "team_a_critic_status": "APPROVED",
+                "team_a_critic_decision": force_decision.model_dump_json(),
+                "team_a_weakness_flag": True
+            }
         else:
-            return {"team_b_critic_status": "APPROVED", "team_b_weakness_flag": True}
+            return {
+                "team_b_critic_status": "APPROVED",
+                "team_b_critic_decision": force_decision.model_dump_json(),
+                "team_b_weakness_flag": True
+            }
 
     # Run the LLM audit
     output: CriticDecision = critic_chain.invoke({
