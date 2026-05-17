@@ -50,3 +50,15 @@ class StrategyDocument(BaseModel):
     research_directives: List[str] = Field(
         description="Specific, targeted claims or stats the Researcher needs to go find via Tavily to prove the core_claims."
     )
+
+
+class EvidenceItem(BaseModel):
+    claim: str = Field(description="The specific claim being supported.")
+    source_url: str = Field(description="The URL of the source backing this claim.")
+    extracted_fact: str = Field(description="The exact quote or data point from the source.")
+
+class EvidenceDocument(BaseModel):
+    """Compiled research backing the team's strategy."""
+    research_summary: str = Field(description="A brief summary of findings.")
+    evidence_list: List[EvidenceItem] = Field(description="List of verified claims and their sources.")
+    failed_searches: List[str] = Field(description="Directives that yielded no useful results (if any).")
