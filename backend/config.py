@@ -14,6 +14,8 @@ class Settings(BaseSettings):
     GEMINI_API_KEY: str
     GEMINI_LLM_MODEL: str = "gemini-2.5-flash"
 
+    TAVILY_API_KEY: str
+
     MAX_ROUNDS: int = 2
 
 
