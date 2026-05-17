@@ -1,10 +1,20 @@
 import json
+from unittest.mock import patch
+from backend.models.schemas import CriticDecision
 from backend.core.graph import stoa_graph
+
 
 def main():
     print("=" * 50)
-    print("🏟️  STOA END-TO-END TEST: TEAM A FULL FLOW")
+    print("STOA RETRY LOOP TEST: TEAM A")
     print("=" * 50)
+
+    mock_rejection = CriticDecision(
+        status="REJECTED",
+        reasoning="Evidence is weak and does not support core claims.",
+        weak_points=["No concrete data", "Sources are unreliable"],
+        retry_directive="One Piece named character count official source"
+    )
 
     initial_state = {
         "user_query": "which is better one piece or attack on titan",
@@ -33,29 +43,24 @@ def main():
         "winner": None,
     }
 
-    try:
+    with patch("backend.agents.team.critic.critic_chain") as mock_chain:
+        mock_chain.invoke.return_value = mock_rejection
         final_state = stoa_graph.invoke(initial_state)
 
-        print("\n" + "=" * 50)
-        print("📋 FINAL STATE SUMMARY")
-        print("=" * 50)
+    print("\n" + "=" * 50)
+    print("RETRY LOOP RESULT")
+    print("=" * 50)
+    print(f"\nCritic status  : {final_state.get('team_a_critic_status')}")
+    print(f"Retry count    : {final_state.get('team_a_retry_count')}")
+    print(f"Weakness flag  : {final_state.get('team_a_weakness_flag')}")
 
-        print(f"\n✅ Clarification needed: {final_state.get('clarification_needed')}")
-        print(f"✅ Current round: {final_state.get('current_round')}")
-        print(f"✅ Retry count: {final_state.get('team_a_retry_count')}")
-        print(f"✅ Weakness flag: {final_state.get('team_a_weakness_flag')}")
-        print(f"✅ Critic status: {final_state.get('team_a_critic_status')}")
+    argument = final_state.get("team_a_argument")
+    if argument:
+        print("\n[TEAM A ARGUMENT — FORCED THROUGH]\n")
+        print(argument)
+    else:
+        print("\nNo argument produced.")
 
-        argument = final_state.get("team_a_argument")
-        if argument:
-            print("\n🎤 [TEAM A ARGUMENT]\n")
-            print(argument)
-        else:
-            print("\n❌ No argument produced.")
-
-    except Exception as e:
-        print(f"\n❌ Error: {e}")
-        raise
 
 if __name__ == "__main__":
     main()

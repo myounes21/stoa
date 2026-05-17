@@ -1,30 +1,79 @@
+import json
 from backend.agents.dispatcher import dispatcher_node
 from backend.models.state import STOAState
 
-state: STOAState = {
-    "user_query": "MESSI VS RONALDO?",
-    "arena_manifest": None,
-    "clarification_needed": None,
-    "clarification_response": None,
-    "current_round": 0,
-    "max_rounds": 2,
-    "team_a_strategy": None,
-    "team_a_evidence": None,
-    "team_a_critic_status": None,
-    "team_a_retry_count": 0,
-    "team_a_weakness_flag": False,
-    "team_a_argument": None,
-    "team_b_strategy": None,
-    "team_b_evidence": None,
-    "team_b_critic_status": None,
-    "team_b_retry_count": 0,
-    "team_b_weakness_flag": False,
-    "team_b_argument": None,
-    "debate_history": [],
-    "truth_report": None,
-    "final_verdict": None,
-    "winner": None,
-}
+def main():
+    print("=" * 50)
+    print("🎯 STOA DISPATCHER TEST")
+    print("=" * 50)
 
-result = dispatcher_node(state)
-print(result)
+    # --- Test 1: Clear query (should fire immediately) ---
+    print("\n📋 TEST 1: Clear query (expecting no clarification)")
+    print("-" * 40)
+
+    state_clear: STOAState = {
+        "user_query": "one piece vs attack on titan",
+        "arena_manifest": None,
+        "clarification_needed": None,
+        "clarification_response": None,
+        "current_round": 0,
+        "max_rounds": 2,
+        "team_a_strategy": None,
+        "team_a_evidence": None,
+        "team_a_critic_status": None,
+        "team_a_critic_decision": None,
+        "team_b_critic_decision": None,
+        "team_a_retry_count": 0,
+        "team_a_weakness_flag": False,
+        "team_a_argument": None,
+        "team_b_strategy": None,
+        "team_b_evidence": None,
+        "team_b_critic_status": None,
+        "team_b_retry_count": 0,
+        "team_b_weakness_flag": False,
+        "team_b_argument": None,
+        "debate_history": [],
+        "truth_report": None,
+        "final_verdict": None,
+        "winner": None,
+    }
+
+    try:
+        result = dispatcher_node(state_clear)
+        print(f"Clarification needed : {result.get('clarification_needed')}")
+        print(f"Clarification response: {result.get('clarification_response')}")
+        manifest = result.get("arena_manifest")
+        if manifest:
+            print("\n✅ Arena Manifest generated:")
+            print(json.dumps(manifest, indent=2))
+        else:
+            print("❌ No manifest generated.")
+    except Exception as e:
+        print(f"❌ Error: {e}")
+        raise
+
+    # --- Test 2: Ambiguous query (should ask for clarification) ---
+    print("\n📋 TEST 2: Ambiguous query (expecting clarification)")
+    print("-" * 40)
+
+    state_ambiguous: STOAState = {
+        **state_clear,
+        "user_query": "what is the best anime?"
+    }
+
+    try:
+        result = dispatcher_node(state_ambiguous)
+        print(f"Clarification needed : {result.get('clarification_needed')}")
+        print(f"Clarification response: {result.get('clarification_response')}")
+        manifest = result.get("arena_manifest")
+        if manifest:
+            print("\n⚠️  Manifest generated (unexpected):")
+            print(json.dumps(manifest, indent=2))
+        else:
+            print("✅ No manifest — correct behavior.")
+    except Exception as e:
+        print(f"❌ Error: {e}")
+        raise
+
+if __name__ == "__main__":
+    main()

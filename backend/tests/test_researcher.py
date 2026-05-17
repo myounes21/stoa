@@ -4,23 +4,24 @@ from backend.agents.team.researcher import researcher_node_a
 
 
 def main():
-    print("==================================================")
+    print("=" * 50)
     print("STOA RESEARCHER TEST: TEAM A (ONE PIECE)")
-    print("==================================================\n")
+    print("=" * 50 + "\n")
 
     mock_strategy = {
-        "win_condition": "Prove that One Piece's superior character development and world-building make it the better anime series, as evidenced by its ability to craft compelling characters and a rich, immersive world that resonates with audiences",
+        "win_condition": "Prove that One Piece's superior character development and world-building make it the better anime series.",
         "core_claims": [
-            "One Piece's diverse and well-developed cast of characters is unparalleled in anime",
-            "One Piece's world-building is more immersive and expansive, with a rich history and lore"
+            "One Piece has a larger named character roster with individually developed backstories",
+            "One Piece's world-building mechanics (Devil Fruits, Haki, Void Century) are more layered than AOT's"
         ],
         "anticipated_attacks": [
-            "Attack on Titan's darker and more mature themes will resonate more with audiences",
-            "Attack on Titan's plot is more cohesive and well-structured"
+            "ATTACK: Attack on Titan has a tighter, more cohesive plot | COUNTER: One Piece's longer runtime allows deeper world exploration",
+            "ATTACK: AOT's themes are more mature and impactful | COUNTER: One Piece tackles themes of freedom, justice, and sacrifice at equal depth"
         ],
         "research_directives": [
-            "Find data on the number of unique characters in One Piece vs Attack on Titan",
-            "Gather examples of One Piece's world-building, such as the Will of D. and the Void Century"
+            "One Piece total named characters count vs Attack on Titan",
+            "One Piece Devil Fruit types and Haki system explained",
+            "One Piece Void Century lore and Will of D mystery"
         ]
     }
 
@@ -54,6 +55,8 @@ def main():
         "team_a_strategy": json.dumps(mock_strategy),
         "team_a_evidence": None,
         "team_a_critic_status": None,
+        "team_a_critic_decision": None,
+        "team_b_critic_decision": None,
         "team_a_retry_count": 0,
         "team_a_weakness_flag": False,
         "team_a_argument": None,
@@ -72,7 +75,6 @@ def main():
 
     try:
         result = researcher_node_a(state)
-
         evidence_json = result.get("team_a_evidence")
 
         if evidence_json:
@@ -84,6 +86,7 @@ def main():
 
     except Exception as e:
         print(f"Error: {e}")
+        raise
 
 
 if __name__ == "__main__":
