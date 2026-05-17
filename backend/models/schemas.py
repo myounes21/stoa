@@ -94,3 +94,24 @@ class SpeakerOutput(BaseModel):
             "Write like you are speaking, not writing an essay."
         )
     )
+
+
+class ClaimVerification(BaseModel):
+    claim: str = Field(description="The exact claim made in the debate.")
+    team: str = Field(description="Which team made this claim: Team A or Team B.")
+    verdict: Literal["VERIFIED", "UNVERIFIED", "FALSE"] = Field(
+        description="VERIFIED if confirmed by a source. FALSE if contradicted. UNVERIFIED if no source found."
+    )
+    source_url: Optional[str] = Field(
+        description="The source URL that confirms or contradicts the claim. None if unverified.",
+        default=None
+    )
+    explanation: str = Field(description="Brief explanation of the verdict.")
+
+
+class TruthReport(BaseModel):
+    verified_count: int = Field(description="Number of verified claims.")
+    unverified_count: int = Field(description="Number of unverified claims.")
+    false_count: int = Field(description="Number of false claims.")
+    claims: List[ClaimVerification] = Field(description="Full list of verified claims.")
+    summary: str = Field(description="Brief summary of findings for the Analyst.")
