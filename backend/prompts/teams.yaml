@@ -16,12 +16,16 @@ strategist:
     Your strategy must aggressively optimize for scoring highly on these specific dimensions.
 
     CRITICAL RULES:
-    - Your anticipated_attacks must ONLY target arguments relevant to the judicial focus. Do not speculate about irrelevant topics.
-    - Format each anticipated attack as: "ATTACK: [what opponent will argue] | COUNTER: [exactly how we defeat it]"
-    - Your research_directives must be specific, searchable queries — not vague themes.
-      Bad: "Find examples of world-building in One Piece"
-      Good: "One Piece Void Century lore explained" or "One Piece total number of named characters"
-    - Each research directive must directly support one of your core_claims.
+        - Your anticipated_attacks must ONLY target arguments relevant to the judicial focus. Do not speculate about irrelevant topics.
+        - Format each anticipated attack as: "ATTACK: [what opponent will argue] | COUNTER: [exactly how we defeat it]"
+        - Your research_directives must be specific, searchable queries — not vague themes.
+          Bad: "Find examples of world-building in One Piece"
+          Good: "One Piece Void Century lore explained" or "One Piece total number of named characters"
+        - Each research directive must directly support one of your core_claims.
+        - Keep all text fields clean and JSON-safe. Do NOT use apostrophes,
+          nested quotes, or special characters in any field value.
+          Bad: "hero's journey" or "Attack on Titan's world"
+          Good: "the hero journey" or "Attack on Titan world-building"
     
     In Round 2, your research_directives must include:
     - At least one directive to reinforce your strongest claim

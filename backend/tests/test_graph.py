@@ -1,10 +1,9 @@
-import json
 from backend.core.graph import stoa_graph
 
 
 def main():
     print("=" * 50)
-    print("STOA END-TO-END TEST: BOTH TEAMS")
+    print("STOA END-TO-END TEST: 2 ROUNDS")
     print("=" * 50)
 
     initial_state = {
@@ -38,35 +37,15 @@ def main():
         final_state = stoa_graph.invoke(initial_state)
 
         print("\n" + "=" * 50)
-        print("FINAL STATE SUMMARY")
+        print("DEBATE HISTORY")
         print("=" * 50)
 
-        print(f"\nTeam A critic status : {final_state.get('team_a_critic_status')}")
-        print(f"Team A retry count   : {final_state.get('team_a_retry_count')}")
-        print(f"Team A weakness flag : {final_state.get('team_a_weakness_flag')}")
+        for round_entry in final_state.get("debate_history", []):
+            print(f"\n--- ROUND {round_entry['round']} ---")
+            print(f"\nTEAM A:\n{round_entry['team_a']}")
+            print(f"\nTEAM B:\n{round_entry['team_b']}")
 
-        print(f"\nTeam B critic status : {final_state.get('team_b_critic_status')}")
-        print(f"Team B retry count   : {final_state.get('team_b_retry_count')}")
-        print(f"Team B weakness flag : {final_state.get('team_b_weakness_flag')}")
-
-        argument_a = final_state.get("team_a_argument")
-        argument_b = final_state.get("team_b_argument")
-
-        if argument_a:
-            print("\n" + "=" * 50)
-            print("TEAM A ARGUMENT")
-            print("=" * 50)
-            print(argument_a)
-        else:
-            print("\nNo Team A argument produced.")
-
-        if argument_b:
-            print("\n" + "=" * 50)
-            print("TEAM B ARGUMENT")
-            print("=" * 50)
-            print(argument_b)
-        else:
-            print("\nNo Team B argument produced.")
+        print(f"\nFinal round reached: {final_state.get('current_round') - 1}")
 
     except Exception as e:
         print(f"\nError: {e}")

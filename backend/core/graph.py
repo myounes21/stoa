@@ -14,6 +14,50 @@ def dispatcher_router(state: STOAState) -> list[str]:
     return ["strategist_a", "strategist_b"]
 
 
+def collect_round(state: STOAState) -> dict:
+    """Fan-in node: appends round results to history and resets team state."""
+    round_entry = {
+        "round": state["current_round"],
+        "team_a": state["team_a_argument"],
+        "team_b": state["team_b_argument"]
+    }
+
+    updated_history = state["debate_history"] + [round_entry]
+
+    print(f"\n[Round {state['current_round']}] Arguments collected. Resetting for next round.")
+
+    return {
+        # Advance round tracking
+        "current_round": state["current_round"] + 1,
+        "debate_history": updated_history,
+
+        # Reset Team A
+        "team_a_strategy": None,
+        "team_a_evidence": None,
+        "team_a_argument": None,
+        "team_a_critic_status": None,
+        "team_a_critic_decision": None,
+        "team_a_retry_count": 0,
+        "team_a_weakness_flag": False,
+
+        # Reset Team B
+        "team_b_strategy": None,
+        "team_b_evidence": None,
+        "team_b_argument": None,
+        "team_b_critic_status": None,
+        "team_b_critic_decision": None,
+        "team_b_retry_count": 0,
+        "team_b_weakness_flag": False,
+    }
+
+
+def round_router(state: STOAState) -> list[str]:
+    """Route to next round or END."""
+    if state["current_round"] <= state["max_rounds"]:
+        return ["strategist_a", "strategist_b"]
+    return [END]
+
+
 def build_graph():
     graph = StateGraph(STOAState)
 
@@ -27,6 +71,7 @@ def build_graph():
     graph.add_node("critic_b", critic_node_b)
     graph.add_node("speaker_a", speaker_node_a)
     graph.add_node("speaker_b", speaker_node_b)
+    graph.add_node("collect_round", collect_round)
 
     # --- Wire Edges ---
     graph.add_edge(START, "dispatcher")
@@ -66,9 +111,20 @@ def build_graph():
         }
     )
 
-    # Fan-in: both speakers → END
-    graph.add_edge("speaker_a", END)
-    graph.add_edge("speaker_b", END)
+    # Fan-in: both speakers → collect_round
+    graph.add_edge("speaker_a", "collect_round")
+    graph.add_edge("speaker_b", "collect_round")
+
+    # Round router: loop back or END
+    graph.add_conditional_edges(
+        "collect_round",
+        round_router,
+        {
+            END: END,
+            "strategist_a": "strategist_a",
+            "strategist_b": "strategist_b"
+        }
+    )
 
     return graph.compile()
 

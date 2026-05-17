@@ -7,7 +7,7 @@ from backend.config import settings
 tavily_client = TavilyClient(api_key=settings.TAVILY_API_KEY)
 
 
-def perform_research(queries: List[str], max_results_per_query: int = 3) -> str:
+def perform_research(queries: List[str], max_results_per_query: int = settings.TAVILY_MAX_RESULTS) -> str:
     """
     Executes multiple search queries and compiles the results into a single context string.
     """
