@@ -22,8 +22,8 @@ STOA/
 │   │   │   └── speaker.py
 │   │   └── judges/
 │   │       ├── __init__.py
-│   │       ├── clerk.py
-│   │       └── analyst.py
+│   │       ├── analyst.py
+│   │       └── clerk.py
 │   │
 │   ├── llm/
 │   │   ├── __init__.py
@@ -32,6 +32,7 @@ STOA/
 │   │
 │   ├── models/
 │   │   ├── __init__.py
+│   │   ├── schemas.py
 │   │   └── state.py
 │   │
 │   ├── prompts/
@@ -45,25 +46,39 @@ STOA/
 │   │
 │   ├── utils/
 │   │   ├── __init__.py
-│   │   └── logger.py
+│   │   ├── logger.py
+│   │   └── prompts.py
 │   │
 │   ├── tests/
 │   │   ├── __init__.py
+│   │   ├── test_critic.py
+│   │   ├── test_dispatcher_chat.py
 │   │   ├── test_dispatcher.py
 │   │   ├── test_team.py
 │   │   ├── test_graph.py
-│   │   └── test_judges.py
+│   │   ├── test_judges.py
+│   │   ├── test_researcher.py
+│   │   ├── test_speaker.py
+│   │   └── test_strategist.py
 │   │
+│   ├── .env
+│   ├── .env.example
 │   ├── config.py
-│   ├── main.py
-│   └── .env
-│
-├── frontend/
-│ 
+│   └── main.py
 │
 ├── docs/
-│   └── STOA_documentation.md
+│   ├── STOA_documentation.md
+│   └── STOA_file_sturcture.md
+│
+├── frontend/
+│
+├── notebooks/
+│   └── test_llm.ipynb
 │
 ├── .gitignore
+├── .python-version
+├── .idea/
+├── .venv/
 ├── pyproject.toml
+├── uv.lock
 └── README.md
