@@ -57,9 +57,6 @@ class EvidenceItem(BaseModel):
     source_url: Optional[str] = Field(
         description="The URL of the source. None if no source was found."
     )
-    raw_snippet: str = Field(
-        description="The exact text copied verbatim from the search results for this source. Do NOT paraphrase."
-    )
     extracted_fact: str = Field(
         description="Your interpretation of the raw_snippet. Must be grounded in raw_snippet only."
     )
@@ -90,5 +87,10 @@ class CriticDecision(BaseModel):
 
 class SpeakerOutput(BaseModel):
     argument: str = Field(
-        description="The final public-facing debate argument. Aggressive, confident, evidence-grounded."
+        description=(
+            "The final debate argument. "
+            "Use short, punchy sentences — no sentence should chain more than one main clause. "
+            "Break into paragraphs naturally where the point changes. "
+            "Write like you are speaking, not writing an essay."
+        )
     )
