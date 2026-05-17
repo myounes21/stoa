@@ -21,17 +21,14 @@ dispatcher_chain = DISPATCHER_PROMPT | structured_llm
 def dispatcher_node(state: STOAState) -> dict:
     query = state["user_query"]
 
-    # Let the LLM handle all the logic
     llm_output: DispatcherOutput = dispatcher_chain.invoke({"query": query})
 
-    # Route based on LLM decision
     if llm_output.clarification_needed or not llm_output.manifest:
         return {
             "clarification_needed": True,
             "clarification_response": llm_output.clarification_response
         }
 
-    # If we got here, it's a valid debate
     manifest = ArenaManifest(**llm_output.manifest.model_dump())
 
     return {

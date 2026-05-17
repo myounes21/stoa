@@ -36,5 +36,4 @@ def perform_research(queries: List[str], max_results_per_query: int = 3) -> str:
         except Exception as e:
             aggregated_results.append(f"Query: '{query}'\nError executing search: {str(e)}")
 
-    # Combine all results into a single string for the LLM to read
     return "\n\n".join(aggregated_results)
