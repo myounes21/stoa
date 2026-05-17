@@ -87,3 +87,8 @@ class CriticDecision(BaseModel):
         description="If REJECTED, a specific new search query the Researcher should try instead. None if APPROVED.",
         default=None
     )
+
+class SpeakerOutput(BaseModel):
+    argument: str = Field(
+        description="The final public-facing debate argument. Aggressive, confident, evidence-grounded."
+    )
