@@ -45,7 +45,7 @@ class StrategyDocument(BaseModel):
         description="The 2-3 primary arguments the team will deploy this round."
     )
     anticipated_attacks: List[str] = Field(
-        description="What the opponent is most likely to argue, and how we plan to counter it."
+        description="2-3 attacks the opponent will likely make, relevant to the judicial focus. Format each as: 'ATTACK: [what opponent will argue] | COUNTER: [how we defeat it]'."
     )
     research_directives: List[str] = Field(
         description="Specific, targeted claims or stats the Researcher needs to go find via Tavily to prove the core_claims."
@@ -54,9 +54,15 @@ class StrategyDocument(BaseModel):
 
 class EvidenceItem(BaseModel):
     claim: str = Field(description="The specific claim being supported.")
-    source_url: str = Field(description="The URL of the source backing this claim.")
-    extracted_fact: str = Field(description="The exact quote or data point from the source.")
-
+    source_url: Optional[str] = Field(
+        description="The URL of the source. None if no source was found."
+    )
+    raw_snippet: str = Field(
+        description="The exact text copied verbatim from the search results for this source. Do NOT paraphrase."
+    )
+    extracted_fact: str = Field(
+        description="Your interpretation of the raw_snippet. Must be grounded in raw_snippet only."
+    )
 class EvidenceDocument(BaseModel):
     """Compiled research backing the team's strategy."""
     research_summary: str = Field(description="A brief summary of findings.")

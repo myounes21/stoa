@@ -5,10 +5,9 @@ from backend.agents.team.strategist import strategist_node_a
 
 def main():
     print("==================================================")
-    print("🧠 STOA STRATEGIST TEST: TEAM A (ONE PIECE)")
+    print("STOA STRATEGIST TEST: TEAM A (ONE PIECE)")
     print("==================================================\n")
 
-    # 1. Create a mock state with a pre-generated manifest
     state: STOAState = {
         "user_query": "which is better one piece or attack on titan",
         "arena_manifest": {
@@ -53,25 +52,22 @@ def main():
         "winner": None
     }
 
-    print("🤖 Strategist is formulating the battle plan...\n")
+    print("Strategist is formulating the battle plan...\n")
 
     try:
-        # Run the node for Team A
         result = strategist_node_a(state)
 
-        # The result will contain the JSON string of the strategy document
         strategy_json = result.get("team_a_strategy")
 
         if strategy_json:
-            # Parse it back to a dict just so we can pretty-print it
             strategy_dict = json.loads(strategy_json)
-            print("✅ [STRATEGY GENERATED]\n")
+            print("[STRATEGY GENERATED]\n")
             print(json.dumps(strategy_dict, indent=2))
         else:
-            print("❌ Failed to generate strategy.")
+            print("Failed to generate strategy.")
 
     except Exception as e:
-        print(f"❌ Error: {e}")
+        print(f"Error: {e}")
 
 
 if __name__ == "__main__":

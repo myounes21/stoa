@@ -25,12 +25,10 @@ def run_strategist(state: STOAState, team_id: str) -> dict:
     # Determine which team's data to pull from the manifest
     team_data = manifest["team_a"] if team_id == "A" else manifest["team_b"]
 
-    # Format the debate history nicely for the LLM
     history_str = "No history yet (Round 1)."
     if state.get("debate_history"):
         history_str = json.dumps(state["debate_history"], indent=2)
 
-    # Invoke the LLM
     output: StrategyDocument = strategist_chain.invoke({
         "team_name": team_data["team_name"],
         "topic": manifest["topic"],

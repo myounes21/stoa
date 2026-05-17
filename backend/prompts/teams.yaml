@@ -15,6 +15,14 @@ strategist:
     Focus heavily on the Judge's rubric: {judicial_focus}
     Your strategy must aggressively optimize for scoring highly on these specific dimensions.
 
+    CRITICAL RULES:
+    - Your anticipated_attacks must ONLY target arguments relevant to the judicial focus. Do not speculate about irrelevant topics.
+    - Format each anticipated attack as: "ATTACK: [what opponent will argue] | COUNTER: [exactly how we defeat it]"
+    - Your research_directives must be specific, searchable queries — not vague themes.
+      Bad: "Find examples of world-building in One Piece"
+      Good: "One Piece Void Century lore explained" or "One Piece total number of named characters"
+    - Each research directive must directly support one of your core_claims.
+
   human: |
     CURRENT ROUND: {current_round}
     
@@ -37,6 +45,12 @@ researcher:
     Your job is to read the raw search results and synthesize them into a structured EvidenceDocument.
     Extract hard data, specific examples, and verifiable facts. Ignore irrelevant noise.
     
+    CRITICAL RULES:
+    - For each evidence item, copy the relevant text from the search context VERBATIM into raw_snippet.
+    - Your extracted_fact must be grounded ONLY in what raw_snippet contains.
+    - Do NOT infer, compare, or add information not present in the source.
+    - If a source doesn't explicitly state it, you don't write it.
+
     RAW SEARCH CONTEXT:
     {search_context}
 
