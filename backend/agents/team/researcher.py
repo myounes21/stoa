@@ -29,10 +29,9 @@ def run_researcher(state: STOAState, team_id: str) -> dict:
     strategy = StrategyDocument.model_validate_json(strategy_json)
 
     # 2. Execute actual web searches using the directives
-    print(f"\n🔍 [Researcher {team_id}] Executing Tavily searches...")
+    print(f"\n[Researcher {team_id}] Executing Tavily searches...")
     search_context = perform_research(strategy.research_directives)
 
-    # 3. Pass the raw results to the LLM to synthesize
     output: EvidenceDocument = researcher_chain.invoke({
         "team_name": team_data["team_name"],
         "topic": manifest["topic"],

@@ -5,10 +5,9 @@ from backend.agents.team.researcher import researcher_node_a
 
 def main():
     print("==================================================")
-    print("🔎 STOA RESEARCHER TEST: TEAM A (ONE PIECE)")
+    print("STOA RESEARCHER TEST: TEAM A (ONE PIECE)")
     print("==================================================\n")
 
-    # We take the exact output from your previous Strategist test
     mock_strategy = {
         "win_condition": "Prove that One Piece's superior character development and world-building make it the better anime series, as evidenced by its ability to craft compelling characters and a rich, immersive world that resonates with audiences",
         "core_claims": [
@@ -25,7 +24,6 @@ def main():
         ]
     }
 
-    # Create the mock state, injecting the strategy JSON
     state: STOAState = {
         "user_query": "which is better one piece or attack on titan",
         "arena_manifest": {
@@ -53,7 +51,7 @@ def main():
         "current_round": 1,
         "max_rounds": 2,
         "debate_history": [],
-        "team_a_strategy": json.dumps(mock_strategy),  # <--- Injecting the mock strategy here
+        "team_a_strategy": json.dumps(mock_strategy),
         "team_a_evidence": None,
         "team_a_critic_status": None,
         "team_a_retry_count": 0,
@@ -70,25 +68,22 @@ def main():
         "winner": None
     }
 
-    print("🤖 Researcher is executing Tavily searches and compiling evidence...\n")
+    print("Researcher is executing Tavily searches and compiling evidence...\n")
 
     try:
-        # Run the node for Team A
         result = researcher_node_a(state)
 
-        # The result will contain the JSON string of the evidence document
         evidence_json = result.get("team_a_evidence")
 
         if evidence_json:
-            # Parse it back to a dict just so we can pretty-print it
             evidence_dict = json.loads(evidence_json)
-            print("✅ [EVIDENCE GATHERED]\n")
+            print("[EVIDENCE GATHERED]\n")
             print(json.dumps(evidence_dict, indent=2))
         else:
-            print("❌ Failed to gather evidence.")
+            print("Failed to gather evidence.")
 
     except Exception as e:
-        print(f"❌ Error: {e}")
+        print(f"Error: {e}")
 
 
 if __name__ == "__main__":
