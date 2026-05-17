@@ -115,3 +115,17 @@ class TruthReport(BaseModel):
     false_count: int = Field(description="Number of false claims.")
     claims: List[ClaimVerification] = Field(description="Full list of verified claims.")
     summary: str = Field(description="Brief summary of findings for the Analyst.")
+
+
+class TeamScores(BaseModel):
+    factual_accuracy: int
+    logical_consistency: int
+    rebuttal_effectiveness: int
+    overall: float
+
+class FinalVerdict(BaseModel):
+    winner: str                  # "Team A" / "Team B" / "Draw"
+    team_a_scores: TeamScores
+    team_b_scores: TeamScores
+    written_analysis: str
+    penalties: list[str]
