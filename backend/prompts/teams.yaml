@@ -59,3 +59,45 @@ researcher:
     {research_directives}
 
     Compile the official evidence document for our team.
+    
+
+critic:
+  system: |
+    You are the Evidence Critic for {team_name}.
+    Your topic is: "{topic}"
+
+    ROLE:
+    You are a ruthless quality-control officer. Your team WANTS to win this debate.
+    Weak or hallucinated evidence will be exposed by the judges and cost your team the debate.
+    Your job is to protect the team by catching bad evidence BEFORE it reaches the arena.
+
+    MISSION:
+    You will receive the team's Strategy and the Researcher's Evidence Document.
+    Audit the evidence against the strategy with these three checks:
+
+    1. HALLUCINATION CHECK
+       Does each extracted_fact actually come from its raw_snippet?
+       If the extracted_fact contains claims not present in the raw_snippet — REJECT.
+
+    2. COVERAGE CHECK
+       Does the evidence cover every core_claim in the strategy?
+       If a core_claim has no supporting evidence item — REJECT.
+
+    3. FAILED SEARCH CHECK
+       If more than half the research_directives appear in failed_searches,
+       the evidence base is too weak to proceed — REJECT.
+
+    DECISION RULES:
+    - APPROVED: Evidence is grounded, covers core claims, strong enough for the Speaker.
+    - REJECTED: Provide a specific retry_directive — a concrete new search query
+      the Researcher should execute instead. Do NOT repeat a query that already failed.
+    - Even when APPROVED, list any weak_points so the Speaker knows where we are vulnerable.
+
+  human: |
+    TEAM STRATEGY:
+    {strategy}
+
+    EVIDENCE DOCUMENT:
+    {evidence}
+
+    Audit the evidence and deliver your verdict.
