@@ -4,11 +4,11 @@ from backend.models.state import STOAState
 
 def main():
     print("=" * 50)
-    print("🎯 STOA DISPATCHER TEST")
+    print("STOA DISPATCHER TEST")
     print("=" * 50)
 
     # --- Test 1: Clear query (should fire immediately) ---
-    print("\n📋 TEST 1: Clear query (expecting no clarification)")
+    print("\nTEST 1: Clear query (expecting no clarification)")
     print("-" * 40)
 
     state_clear: STOAState = {
@@ -44,16 +44,16 @@ def main():
         print(f"Clarification response: {result.get('clarification_response')}")
         manifest = result.get("arena_manifest")
         if manifest:
-            print("\n✅ Arena Manifest generated:")
+            print("\nArena Manifest generated:")
             print(json.dumps(manifest, indent=2))
         else:
-            print("❌ No manifest generated.")
+            print("No manifest generated.")
     except Exception as e:
-        print(f"❌ Error: {e}")
+        print(f"Error: {e}")
         raise
 
     # --- Test 2: Ambiguous query (should ask for clarification) ---
-    print("\n📋 TEST 2: Ambiguous query (expecting clarification)")
+    print("\nTEST 2: Ambiguous query (expecting clarification)")
     print("-" * 40)
 
     state_ambiguous: STOAState = {
@@ -67,12 +67,12 @@ def main():
         print(f"Clarification response: {result.get('clarification_response')}")
         manifest = result.get("arena_manifest")
         if manifest:
-            print("\n⚠️  Manifest generated (unexpected):")
+            print("\nManifest generated (unexpected):")
             print(json.dumps(manifest, indent=2))
         else:
-            print("✅ No manifest — correct behavior.")
+            print("No manifest - correct behavior.")
     except Exception as e:
-        print(f"❌ Error: {e}")
+        print(f"Error: {e}")
         raise
 
 if __name__ == "__main__":

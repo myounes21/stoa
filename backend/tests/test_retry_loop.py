@@ -56,7 +56,7 @@ def main():
 
     argument = final_state.get("team_a_argument")
     if argument:
-        print("\n[TEAM A ARGUMENT — FORCED THROUGH]\n")
+        print("\n[TEAM A ARGUMENT - FORCED THROUGH]\n")
         print(argument)
     else:
         print("\nNo argument produced.")

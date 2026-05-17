@@ -3,7 +3,7 @@ from backend.core.graph import stoa_graph
 
 def main():
     print("=" * 50)
-    print("🏟️  STOA END-TO-END TEST: TEAM A FULL FLOW")
+    print("STOA END-TO-END TEST: TEAM A FULL FLOW")
     print("=" * 50)
 
     initial_state = {
@@ -37,24 +37,24 @@ def main():
         final_state = stoa_graph.invoke(initial_state)
 
         print("\n" + "=" * 50)
-        print("📋 FINAL STATE SUMMARY")
+        print("FINAL STATE SUMMARY")
         print("=" * 50)
 
-        print(f"\n✅ Clarification needed: {final_state.get('clarification_needed')}")
-        print(f"✅ Current round: {final_state.get('current_round')}")
-        print(f"✅ Retry count: {final_state.get('team_a_retry_count')}")
-        print(f"✅ Weakness flag: {final_state.get('team_a_weakness_flag')}")
-        print(f"✅ Critic status: {final_state.get('team_a_critic_status')}")
+        print(f"\nClarification needed: {final_state.get('clarification_needed')}")
+        print(f"Current round: {final_state.get('current_round')}")
+        print(f"Retry count: {final_state.get('team_a_retry_count')}")
+        print(f"Weakness flag: {final_state.get('team_a_weakness_flag')}")
+        print(f"Critic status: {final_state.get('team_a_critic_status')}")
 
         argument = final_state.get("team_a_argument")
         if argument:
-            print("\n🎤 [TEAM A ARGUMENT]\n")
+            print("\n[TEAM A ARGUMENT]\n")
             print(argument)
         else:
-            print("\n❌ No argument produced.")
+            print("\nNo argument produced.")
 
     except Exception as e:
-        print(f"\n❌ Error: {e}")
+        print(f"\nError: {e}")
         raise
 
 if __name__ == "__main__":

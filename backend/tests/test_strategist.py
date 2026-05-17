@@ -5,7 +5,7 @@ from backend.agents.team.strategist import strategist_node_a
 
 def main():
     print("=" * 50)
-    print("🧠 STOA STRATEGIST TEST: TEAM A (ONE PIECE)")
+    print("STOA STRATEGIST TEST: TEAM A (ONE PIECE)")
     print("=" * 50)
 
     state: STOAState = {
@@ -62,13 +62,13 @@ def main():
 
         if strategy_json:
             strategy_dict = json.loads(strategy_json)
-            print("✅ [STRATEGY GENERATED]\n")
+            print("[STRATEGY GENERATED]\n")
             print(json.dumps(strategy_dict, indent=2))
         else:
-            print("❌ Failed to generate strategy.")
+            print("Failed to generate strategy.")
 
     except Exception as e:
-        print(f"❌ Error: {e}")
+        print(f"Error: {e}")
         raise
 
 

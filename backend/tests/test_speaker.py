@@ -5,7 +5,7 @@ from backend.agents.team.speaker import speaker_node_a
 
 def main():
     print("=" * 50)
-    print("🎤 STOA SPEAKER TEST: TEAM A (ONE PIECE)")
+    print("STOA SPEAKER TEST: TEAM A (ONE PIECE)")
     print("=" * 50)
 
     mock_strategy = {
@@ -16,7 +16,7 @@ def main():
             "One Piece's episodic structure feeds into a richer larger narrative"
         ],
         "anticipated_attacks": [
-            "ATTACK: Attack on Titan has darker, more mature themes | COUNTER: Maturity is not depth — One Piece's 1000+ chapters of interconnected lore demonstrates far greater narrative complexity",
+            "ATTACK: Attack on Titan has darker, more mature themes | COUNTER: Maturity is not depth - One Piece's 1000+ chapters of interconnected lore demonstrates far greater narrative complexity",
             "ATTACK: Attack on Titan has a more focused plot | COUNTER: Focus at the cost of world richness is a limitation, not a strength"
         ],
         "research_directives": []
@@ -84,22 +84,22 @@ def main():
     }
 
     # --- Test 1: No weak points ---
-    print("\n📋 TEST 1: No Critic weak points (baseline)")
+    print("\nTEST 1: No Critic weak points (baseline)")
     print("-" * 40)
     try:
         result = speaker_node_a(base_state)
         argument = result.get("team_a_argument")
         if argument:
-            print("\n🎤 [TEAM A ARGUMENT]\n")
+            print("\n[TEAM A ARGUMENT]\n")
             print(argument)
         else:
-            print("❌ No argument produced.")
+            print("No argument produced.")
     except Exception as e:
-        print(f"❌ Error: {e}")
+        print(f"Error: {e}")
         raise
 
     # --- Test 2: With weak points ---
-    print("\n📋 TEST 2: With Critic weak points")
+    print("\nTEST 2: With Critic weak points")
     print("-" * 40)
     mock_critic_decision = CriticDecision(
         status="APPROVED",
@@ -120,12 +120,12 @@ def main():
         result = speaker_node_a(state_with_weakpoints)
         argument = result.get("team_a_argument")
         if argument:
-            print("\n🎤 [TEAM A ARGUMENT — WITH WEAK POINTS]\n")
+            print("\n[TEAM A ARGUMENT - WITH WEAK POINTS]\n")
             print(argument)
         else:
-            print("❌ No argument produced.")
+            print("No argument produced.")
     except Exception as e:
-        print(f"❌ Error: {e}")
+        print(f"Error: {e}")
         raise
 
 if __name__ == "__main__":
