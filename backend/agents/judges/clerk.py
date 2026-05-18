@@ -55,7 +55,7 @@ def clerk_node(state: STOAState) -> dict:
     # 2. Format the full transcript
     transcript = _format_transcript(debate_history)
 
-    # 3. Run the Clerk LLM
+    # 3. Run the clerk evaluation step
     output: TruthReport = clerk_chain.invoke({
         "debate_transcript": transcript,
         "search_results": search_results

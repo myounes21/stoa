@@ -9,7 +9,7 @@ class TeamMission(BaseModel):
     mission_goal: str = Field(description="What the team must prove to WIN — specific, not vague.")
 
 class ArenaManifestLLM(BaseModel):
-    """What the LLM is responsible for generating if the debate is valid."""
+    """What the manifest generator produces if the debate is valid."""
     topic: str = Field(description="The high-level subject or user question.")
     team_a: TeamMission
     team_b: TeamMission
@@ -18,7 +18,7 @@ class ArenaManifestLLM(BaseModel):
     )
 
 class DispatcherOutput(BaseModel):
-    """The master output for the Dispatcher LLM. It chooses to either clarify OR generate a manifest."""
+    """The master output for the dispatcher. It chooses to either clarify OR generate a manifest."""
     clarification_needed: bool = Field(
         description="Set to True ONLY if the user's query is too vague, open-ended, or lacks two clear sides (e.g., 'best anime'). Set to False if it's a clear comparison."
     )
@@ -32,7 +32,7 @@ class DispatcherOutput(BaseModel):
     )
 
 class ArenaManifest(ArenaManifestLLM):
-    """Full manifest with system-controlled fields added after LLM generation."""
+    """Full manifest with system-controlled fields added after generation."""
     session_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     max_rounds: int = Field(default_factory=lambda: settings.MAX_ROUNDS)
 

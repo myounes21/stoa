@@ -26,7 +26,7 @@ def run_critic(state: STOAState, team_id: str) -> dict:
     strategy_json = state["team_a_strategy"] if team_id == "A" else state["team_b_strategy"]
     evidence_json = state["team_a_evidence"] if team_id == "A" else state["team_b_evidence"]
 
-    # Force approve if max retries reached — no LLM call needed
+    # Force approve if max retries reached — no model call needed
     if retry_count >= 2:
         print(f"\n[Critic {team_id}] Max retries reached. Force approving with weakness flag.")
         force_decision = CriticDecision(
@@ -48,7 +48,7 @@ def run_critic(state: STOAState, team_id: str) -> dict:
                 "team_b_weakness_flag": True
             }
 
-    # Run the LLM audit
+    # Run the audit step
     output: CriticDecision = critic_chain.invoke({
         "team_name": team_data["team_name"],
         "topic": manifest["topic"],
