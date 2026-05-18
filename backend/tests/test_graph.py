@@ -39,7 +39,7 @@ def main():
         print("Invoking STOA graph...\n")
         final_state = stoa_graph.invoke(initial_state)
 
-        # --- Debate History ---
+        #  Debate History
         print("\n" + "=" * 60)
         print("DEBATE TRANSCRIPT")
         print("=" * 60)
@@ -58,9 +58,9 @@ def main():
         else:
             print("No truth report generated.")
 
-        # --- Final Verdict ---
+        #  Final Verdict
         print("\n" + "=" * 60)
-        print("⚖️  FINAL VERDICT")
+        print(" FINAL VERDICT")
         print("=" * 60)
         final_verdict_json = final_state.get("final_verdict")
         if final_verdict_json:
@@ -68,7 +68,7 @@ def main():
         else:
             print("No final verdict generated.")
 
-        # --- Winner Banner ---
+        # Winner Banner
         winner = final_state.get("winner")
         if winner:
             print(f"\n🏆 WINNER: {winner}")
