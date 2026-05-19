@@ -1,6 +1,7 @@
+import json
 from langchain_core.prompts import ChatPromptTemplate
 
-from backend.models.schemas import TruthReport
+from backend.models.schemas import TruthReport, ClaimsList
 from backend.models.state import STOAState
 from backend.utils.prompts import load_prompt
 from backend.llm.gemini import judge_llm
@@ -10,30 +11,21 @@ _prompt = load_prompt("judges.yaml", "clerk")
 
 structured_llm = judge_llm.with_structured_output(TruthReport)
 
-CLERK_PROMPT = ChatPromptTemplate.from_messages([
+EXTRACT_PROMPT = ChatPromptTemplate.from_messages([
+    ("system", _prompt["extract_system"]),
+    ("human", _prompt["extract_human"])
+])
+
+VERIFY_PROMPT = ChatPromptTemplate.from_messages([
     ("system", _prompt["system"]),
     ("human", _prompt["human"])
 ])
 
-clerk_chain = CLERK_PROMPT | structured_llm
-
-
-def _extract_claims_for_search(debate_history: list[dict]) -> list[str]:
-    """Build search queries from debate arguments to verify claims."""
-    queries = []
-    for round_entry in debate_history:
-        team_a_arg = round_entry.get("team_a", "")
-        team_b_arg = round_entry.get("team_b", "")
-        # Extract one search query per round per team — keep it focused
-        if team_a_arg:
-            queries.append(f"fact check: {team_a_arg[:100]}")
-        if team_b_arg:
-            queries.append(f"fact check: {team_b_arg[:100]}")
-    return queries
+extract_chain = EXTRACT_PROMPT | judge_llm.with_structured_output(ClaimsList)
+verify_chain = VERIFY_PROMPT | structured_llm
 
 
 def _format_transcript(debate_history: list[dict]) -> str:
-    """Format debate history into a clean readable transcript."""
     transcript = ""
     for round_entry in debate_history:
         transcript += f"\n--- ROUND {round_entry['round']} ---\n"
@@ -45,22 +37,27 @@ def _format_transcript(debate_history: list[dict]) -> str:
 def clerk_node(state: STOAState) -> dict:
     """Clerk agent — extracts and verifies all factual claims from the debate."""
     debate_history = state["debate_history"]
-
-    print("\n[Clerk] Extracting claims and running verification searches...")
-
-    # 1. Build search queries from the debate arguments
-    queries = _extract_claims_for_search(debate_history)
-    search_results = perform_research(queries)
-
-    # 2. Format the full transcript
     transcript = _format_transcript(debate_history)
 
-    # 3. Run the clerk evaluation step
-    output: TruthReport = clerk_chain.invoke({
+    print("\n[Clerk] Step 1: Extracting specific factual claims from transcript...")
+
+    claims_output: ClaimsList = extract_chain.invoke({
+        "debate_transcript": transcript
+    })
+
+    claims = claims_output.claims
+    print(f"[Clerk] Extracted {len(claims)} claims. Running targeted searches...")
+
+    search_results = perform_research(claims)
+
+    print(f"[Clerk] Step 2: Verifying claims against search results...")
+
+    output: TruthReport = verify_chain.invoke({
         "debate_transcript": transcript,
         "search_results": search_results
     })
 
-    print(f"[Clerk] Truth Report complete — {output.verified_count} verified, {output.false_count} false, {output.unverified_count} unverified.")
+    print(f"[Clerk] Truth Report complete — {output.verified_count} verified, "
+          f"{output.false_count} false, {output.unverified_count} unverified.")
 
     return {"truth_report": output.model_dump_json()}
