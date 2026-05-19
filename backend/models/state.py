@@ -1,5 +1,9 @@
-from typing import Optional
+from typing import Annotated, Optional
 from typing_extensions import TypedDict
+
+
+def take_last(a, b):
+    return b
 
 
 class STOAState(TypedDict):
@@ -13,24 +17,22 @@ class STOAState(TypedDict):
     current_round: int
     max_rounds: int
 
-    # Team A Internal (isolated from Judge)
+    # Team A Internal
     team_a_strategy: Optional[str]
     team_a_evidence: Optional[str]
-    team_a_critic_status: Optional[str]   # "APPROVED" / "REJECTED"
-
-    team_a_critic_decision: Optional[str]  # Full CriticDecision JSON
-    team_b_critic_decision: Optional[str]
-
-    team_a_retry_count: int
-    team_a_weakness_flag: bool
+    team_a_critic_status: Annotated[Optional[str], take_last]
+    team_a_critic_decision: Annotated[Optional[str], take_last]
+    team_a_retry_count: Annotated[int, take_last]
+    team_a_weakness_flag: Annotated[bool, take_last]
     team_a_argument: Optional[str]
 
-    # Team B Internal (isolated from Judge)
+    # Team B Internal
     team_b_strategy: Optional[str]
     team_b_evidence: Optional[str]
-    team_b_critic_status: Optional[str]
-    team_b_retry_count: int
-    team_b_weakness_flag: bool
+    team_b_critic_status: Annotated[Optional[str], take_last]
+    team_b_critic_decision: Annotated[Optional[str], take_last]
+    team_b_retry_count: Annotated[int, take_last]
+    team_b_weakness_flag: Annotated[bool, take_last]
     team_b_argument: Optional[str]
 
     # Debate History
