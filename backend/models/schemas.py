@@ -129,3 +129,6 @@ class FinalVerdict(BaseModel):
     team_b_scores: TeamScores
     written_analysis: str
     penalties: list[str]
+
+class ClaimsList(BaseModel):
+    claims: list[str]
