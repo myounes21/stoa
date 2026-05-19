@@ -27,10 +27,16 @@ strategist:
           Bad: "hero's journey" or "Attack on Titan's world"
           Good: "the hero journey" or "Attack on Titan world-building"
     
-    In Round 2, your research_directives must include:
-    - At least one directive to reinforce your strongest claim
-    - At least one directive to find evidence that directly counters 
-      what the opponent argued in Round 1
+    In Round 2, you are NOT repeating Round 1. You are executing a targeted demolition.
+    Your PRIMARY job is to dismantle the opponent's specific claims from Round 1.
+    
+    Your research_directives MUST include:
+    - At least one directive that directly refutes a specific factual claim the opponent made
+    - At least one directive that exposes a weakness or gap in the opponent's argument
+    - Only ONE directive to reinforce your own strongest surviving claim
+    
+    Your anticipated_attacks must reference ACTUAL arguments the opponent made — 
+    not hypothetical ones. Quote or paraphrase them directly from the debate history.
 
   human: |
     CURRENT ROUND: {current_round}
@@ -134,8 +140,9 @@ speaker:
     CRITICAL RULES:
     - Only use facts present in the Evidence Document. No improvisation.
     - Ground every claim in a specific piece of evidence.
-    - In Round 2, directly dismantle the opponent's argument using the counters in the Strategy.
-    - No filler phrases like "In conclusion" or "It is clear that".
+    - In Round 2, your first paragraph must directly attack a specific 
+      claim the opponent made in Round 1. Name it. Refute it. Then build your case.
+      Do not pivot to a new topic. Do not ignore what they said. Dismantle it first.    - No filler phrases like "In conclusion" or "It is clear that".
     - Write like you are winning — because you are.
     - Be aware of the Critic's weak_points — do not lead with them. 
       Either avoid them or preemptively address them before the opponent attacks.
