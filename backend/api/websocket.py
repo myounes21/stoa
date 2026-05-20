@@ -56,6 +56,34 @@ def _format_node_update(node_name: str, output: dict) -> dict | None:
                 "data": {"message": "Please provide two specific options to debate."}
             }
 
+    if node_name in ("strategist_a", "strategist_b"):
+        strategy = output.get("team_a_strategy") or output.get("team_b_strategy")
+        team = "A" if node_name == "strategist_a" else "B"
+        if strategy:
+            return {
+                "type": "agent_output",
+                "data": {"team": team, "agent": "Strategist", "content": strategy}
+            }
+
+    if node_name in ("researcher_a", "researcher_b"):
+        evidence = output.get("team_a_evidence") or output.get("team_b_evidence")
+        team = "A" if node_name == "researcher_a" else "B"
+        if evidence:
+            return {
+                "type": "agent_output",
+                "data": {"team": team, "agent": "Researcher", "content": evidence}
+            }
+
+    if node_name in ("critic_a", "critic_b"):
+        decision = output.get("team_a_critic_decision") or output.get("team_b_critic_decision")
+        status = output.get("team_a_critic_status") or output.get("team_b_critic_status")
+        team = "A" if node_name == "critic_a" else "B"
+        if decision:
+            return {
+                "type": "agent_output",
+                "data": {"team": team, "agent": "Critic", "content": decision, "status": status}
+            }
+
     if node_name in ("speaker_a", "speaker_b"):
         argument = output.get("team_a_argument") or output.get("team_b_argument")
         team = "A" if node_name == "speaker_a" else "B"

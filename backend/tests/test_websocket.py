@@ -24,13 +24,25 @@ async def main():
                 print(f"Arena Ready: {data['topic']}")
                 print(f"   {data['team_a']} vs {data['team_b']}\n")
 
+            elif msg_type == "agent_output":
+                data = message["data"]
+                team = data["team"]
+                agent = data["agent"]
+                content = data["content"]
+                status = data.get("status", "")
+                label = f"[Team {team}] {agent}"
+                if status:
+                    label += f" [{status}]"
+                print(f"{label}:")
+                print(f"   {content[:300]}...\n")
+
             elif msg_type == "argument":
                 data = message["data"]
-                print(f"Team {data['team']} Argument:")
+                print(f"Team {data['team']} Speaker:")
                 print(f"   {data['content'][:300]}...\n")
 
             elif msg_type == "round_complete":
-                print(f"Round {message['data']['round']} Complete\n")
+                print(f"--- Round {message['data']['round']} Complete ---\n")
 
             elif msg_type == "truth_report":
                 data = message["data"]
