@@ -715,7 +715,24 @@ export default function App() {
         <div className="input-screen">
           <div className="input-card">
             <div className="header-title">STOA</div>
-            <p className="input-sub">Two AI teams. Two rounds. One winner. Real-time debate.</p>
+            <div className="stat-strip">
+              <div className="stat-cell">
+                <span className="stat-num blue">2</span>
+                <span className="stat-label">AI teams</span>
+              </div>
+              <div className="stat-cell">
+                <span className="stat-num blue">2</span>
+                <span className="stat-label">rounds</span>
+              </div>
+              <div className="stat-cell">
+                <span className="stat-num amber">1</span>
+                <span className="stat-label">winner</span>
+              </div>
+              <div className="stat-cell">
+                <span className="stat-icon teal">⚡</span>
+                <span className="stat-label">real-time</span>
+              </div>
+            </div>
             <label className="input-label" htmlFor="query">Debate Question</label>
             <input
               id="query"

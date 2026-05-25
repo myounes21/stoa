@@ -16,6 +16,7 @@
   --text-faint: #8888aa;
   --green: #16a34a;
   --amber: #d97706;
+  --teal: #14b8a6;
 
   font: 18px/1.6 "IBM Plex Sans", sans-serif;
   color: var(--text);
