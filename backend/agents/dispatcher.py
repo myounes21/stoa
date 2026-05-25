@@ -26,7 +26,8 @@ def dispatcher_node(state: STOAState) -> dict:
     if llm_output.clarification_needed or not llm_output.manifest:
         return {
             "clarification_needed": True,
-            "clarification_response": llm_output.clarification_response
+            "clarification_response": llm_output.clarification_response,
+            "user_query": state["user_query"]
         }
 
     manifest = ArenaManifest(**llm_output.manifest.model_dump())
