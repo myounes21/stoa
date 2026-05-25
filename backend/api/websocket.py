@@ -48,12 +48,20 @@ def _format_node_update(node_name: str, output: dict) -> dict | None:
                     "topic": manifest.get("topic"),
                     "team_a": manifest.get("team_a", {}).get("team_name"),
                     "team_b": manifest.get("team_b", {}).get("team_name"),
+                    "team_a_stance": manifest.get("team_a", {}).get("stance"),
+                    "team_b_stance": manifest.get("team_b", {}).get("stance"),
+                    "team_a_goal": manifest.get("team_a", {}).get("mission_goal"),
+                    "team_b_goal": manifest.get("team_b", {}).get("mission_goal"),
+                    "judicial_focus": manifest.get("judicial_focus", []),
                 }
             }
         if output.get("clarification_needed"):
             return {
                 "type": "clarification_needed",
-                "data": {"message": "Please provide two specific options to debate."}
+                "data": {
+                    "message": output.get("clarification_response") or "Please provide two specific options to debate.",
+                    "original_query": output.get("user_query")
+                }
             }
 
     if node_name in ("strategist_a", "strategist_b"):
