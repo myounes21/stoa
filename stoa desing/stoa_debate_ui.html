@@ -1,0 +1,650 @@
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500&display=swap');
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --arena-bg: #0d0d0f;
+  --surface: #141418;
+  --surface2: #1c1c22;
+  --surface3: #24242c;
+  --border: rgba(255,255,255,0.08);
+  --border-bright: rgba(255,255,255,0.15);
+  --team-a: #4a9eff;
+  --team-a-dim: rgba(74,158,255,0.12);
+  --team-b: #ff6b6b;
+  --team-b-dim: rgba(255,107,107,0.12);
+  --gold: #f0c060;
+  --gold-dim: rgba(240,192,96,0.12);
+  --text: #e8e8f0;
+  --text-dim: #888899;
+  --text-faint: #444455;
+  --green: #4ade80;
+  --amber: #fbbf24;
+}
+
+body { background: var(--arena-bg); font-family: 'IBM Plex Sans', sans-serif; color: var(--text); }
+
+.arena-root { width: 100%; max-width: 900px; margin: 0 auto; padding: 0 0 2rem; }
+
+.header { text-align: center; padding: 2rem 1rem 1.5rem; border-bottom: 1px solid var(--border); }
+.header-eyebrow { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 3px; color: var(--text-dim); text-transform: uppercase; margin-bottom: 0.75rem; }
+.header-title { font-family: 'Cinzel', serif; font-size: 28px; font-weight: 600; letter-spacing: 2px; color: var(--text); }
+.topic-pill { display: inline-block; margin-top: 1rem; padding: 6px 16px; border-radius: 20px; background: var(--surface2); border: 1px solid var(--border-bright); font-size: 13px; color: var(--text-dim); }
+.topic-pill span { color: var(--text); font-weight: 500; }
+
+.round-tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); padding: 0 1rem; margin-top: 0; }
+.round-tab { padding: 0.75rem 1.25rem; font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 1px; color: var(--text-faint); cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s; text-transform: uppercase; }
+.round-tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+.round-tab:hover:not(.active) { color: var(--text-dim); }
+
+.arena-floor { display: grid; grid-template-columns: 1fr 48px 1fr; gap: 0; padding: 1.5rem 1rem; min-height: 520px; }
+
+.team-col { display: flex; flex-direction: column; gap: 10px; }
+.team-header { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+.team-badge { font-family: 'Cinzel', serif; font-size: 13px; font-weight: 600; padding: 4px 12px; border-radius: 4px; }
+.team-a .team-badge { background: var(--team-a-dim); color: var(--team-a); border: 1px solid rgba(74,158,255,0.3); }
+.team-b .team-badge { background: var(--team-b-dim); color: var(--team-b); border: 1px solid rgba(255,107,107,0.3); }
+.team-position { font-size: 13px; color: var(--text-dim); font-style: italic; line-height: 1.4; }
+
+.agent-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; transition: border-color 0.3s; }
+.agent-card.active { border-color: var(--border-bright); }
+.agent-card.done-a { border-left: 2px solid var(--team-a); }
+.agent-card.done-b { border-left: 2px solid var(--team-b); }
+
+.agent-header { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: var(--surface2); cursor: pointer; }
+.agent-name-row { display: flex; align-items: center; gap: 8px; }
+.agent-icon { width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; flex-shrink: 0; }
+.team-a .agent-icon { background: var(--team-a-dim); color: var(--team-a); }
+.team-b .agent-icon { background: var(--team-b-dim); color: var(--team-b); }
+.agent-label { font-family: 'IBM Plex Mono', monospace; font-size: 12px; font-weight: 500; color: var(--text); }
+.agent-sublabel { font-size: 10px; color: var(--text-faint); font-family: 'IBM Plex Mono', monospace; }
+
+.status-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.status-dot.idle { background: var(--text-faint); }
+.status-dot.running { background: var(--amber); box-shadow: 0 0 6px var(--amber); animation: pulse 1s infinite; }
+.status-dot.done { background: var(--green); }
+.status-dot.rejected { background: var(--team-b); }
+
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+.agent-body { padding: 10px 12px; font-size: 12px; line-height: 1.6; color: var(--text-dim); border-top: 1px solid var(--border); display: none; }
+.agent-body.open { display: block; }
+.agent-body p { color: var(--text-dim); }
+.agent-body .output-label { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--text-faint); letter-spacing: 1px; margin-bottom: 6px; text-transform: uppercase; }
+.agent-body .output-text { color: var(--text); font-size: 12px; line-height: 1.7; }
+.critic-verdict { display: inline-block; padding: 3px 10px; border-radius: 4px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; font-weight: 500; margin-top: 8px; }
+.critic-verdict.approved { background: rgba(74,222,128,0.12); color: var(--green); border: 1px solid rgba(74,222,128,0.3); }
+.critic-verdict.rejected { background: rgba(255,107,107,0.12); color: var(--team-b); border: 1px solid rgba(255,107,107,0.3); }
+
+.connector-col { display: flex; flex-direction: column; align-items: center; padding-top: 48px; gap: 0; }
+.vs-divider { font-family: 'Cinzel', serif; font-size: 14px; color: var(--text-faint); position: sticky; top: 2rem; padding: 8px 0; }
+.flow-line { flex: 1; width: 1px; background: var(--border); }
+
+.speaker-output { background: var(--surface); border: 1px solid var(--border-bright); border-radius: 8px; padding: 14px; margin-top: 4px; }
+.speaker-output .output-label { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--text-faint); letter-spacing: 1px; margin-bottom: 8px; text-transform: uppercase; }
+.team-a .speaker-output { border-left: 2px solid var(--team-a); }
+.team-b .speaker-output { border-left: 2px solid var(--team-b); }
+.speaker-text { font-size: 13px; line-height: 1.7; color: var(--text); font-style: italic; }
+
+.judge-section { margin: 0 1rem; border-top: 1px solid var(--border); padding-top: 1.5rem; }
+.judge-header { text-align: center; margin-bottom: 1.25rem; }
+.judge-title { font-family: 'Cinzel', serif; font-size: 16px; color: var(--gold); letter-spacing: 2px; }
+.judge-subtitle { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--text-faint); margin-top: 4px; letter-spacing: 1px; }
+
+.judge-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 1.25rem; }
+.judge-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+.judge-card-header { padding: 8px 12px; background: var(--surface2); display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--border); }
+.judge-icon { width: 24px; height: 24px; border-radius: 50%; background: var(--gold-dim); display: flex; align-items: center; justify-content: center; font-size: 12px; color: var(--gold); }
+.judge-card-name { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--gold); }
+.judge-card-sub { font-size: 10px; color: var(--text-faint); font-family: 'IBM Plex Mono', monospace; }
+.judge-card-body { padding: 12px; font-size: 12px; line-height: 1.7; color: var(--text-dim); }
+.claim-row { display: flex; align-items: flex-start; gap: 8px; padding: 4px 0; border-bottom: 1px solid var(--border); }
+.claim-row:last-child { border: none; }
+.claim-badge { font-family: 'IBM Plex Mono', monospace; font-size: 9px; padding: 2px 6px; border-radius: 3px; flex-shrink: 0; margin-top: 2px; }
+.claim-badge.verified { background: rgba(74,222,128,0.12); color: var(--green); }
+.claim-badge.false { background: rgba(255,107,107,0.12); color: var(--team-b); }
+.claim-badge.unverified { background: rgba(251,191,36,0.12); color: var(--amber); }
+.claim-text { font-size: 11px; color: var(--text-dim); line-height: 1.5; }
+
+.verdict-banner { background: var(--surface); border: 1px solid var(--gold-dim); border-radius: 8px; padding: 16px; text-align: center; position: relative; overflow: hidden; }
+.verdict-winner { font-family: 'Cinzel', serif; font-size: 22px; color: var(--gold); margin-bottom: 4px; }
+.verdict-sub { font-size: 12px; color: var(--text-dim); }
+.score-row { display: grid; grid-template-columns: 1fr auto 1fr; gap: 12px; align-items: center; margin: 14px 0; }
+.score-side { text-align: center; }
+.score-num { font-family: 'IBM Plex Mono', monospace; font-size: 28px; font-weight: 500; }
+.team-a .score-num { color: var(--team-a); }
+.team-b .score-num { color: var(--team-b); }
+.score-label { font-size: 10px; color: var(--text-faint); font-family: 'IBM Plex Mono', monospace; margin-top: 2px; }
+.score-vs { font-family: 'Cinzel', serif; font-size: 12px; color: var(--text-faint); }
+.metric-bars { display: grid; gap: 6px; margin-top: 12px; }
+.metric-row { display: flex; align-items: center; gap: 8px; }
+.metric-label { font-size: 10px; color: var(--text-faint); width: 90px; flex-shrink: 0; font-family: 'IBM Plex Mono', monospace; text-align: right; }
+.bar-track { flex: 1; height: 4px; background: var(--surface3); border-radius: 2px; display: flex; gap: 2px; }
+.bar-a { height: 100%; border-radius: 2px; background: var(--team-a); }
+.bar-b { height: 100%; border-radius: 2px; background: var(--team-b); }
+.metric-val-a { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--team-a); width: 20px; }
+.metric-val-b { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--team-b); width: 20px; text-align: right; }
+.analysis-text { font-size: 12px; line-height: 1.7; color: var(--text-dim); margin-top: 10px; border-top: 1px solid var(--border); padding-top: 10px; text-align: left; }
+
+.toggle-chevron { font-size: 10px; color: var(--text-faint); transition: transform 0.2s; }
+.toggle-chevron.open { transform: rotate(180deg); }
+
+.retry-badge { font-family: 'IBM Plex Mono', monospace; font-size: 9px; padding: 2px 6px; background: rgba(251,191,36,0.1); color: var(--amber); border-radius: 3px; border: 1px solid rgba(251,191,36,0.2); }
+
+.flow-arrow { text-align: center; padding: 2px 0; color: var(--text-faint); font-size: 10px; }
+</style>
+
+<div class="arena-root">
+  <div class="header">
+    <div class="header-eyebrow">Multi-Agent Adversarial Framework</div>
+    <div class="header-title">STOA</div>
+    <div class="topic-pill">Topic: <span>Python vs JavaScript for backend development</span></div>
+  </div>
+
+  <div class="round-tabs">
+    <div class="round-tab active" onclick="switchRound(1,this)">Round I</div>
+    <div class="round-tab" onclick="switchRound(2,this)">Round II</div>
+    <div class="round-tab" onclick="switchRound(3,this)">Verdict</div>
+  </div>
+
+  <div id="round-1" class="round-view">
+    <div class="arena-floor">
+      <div class="team-col team-a">
+        <div class="team-header">
+          <div class="team-badge">Team A</div>
+        </div>
+        <div class="team-position">Arguing for: Python</div>
+
+        <div class="agent-card done-a" onclick="toggleAgent(this)">
+          <div class="agent-header">
+            <div class="agent-name-row">
+              <div class="agent-icon">S</div>
+              <div>
+                <div class="agent-label">Strategist</div>
+                <div class="agent-sublabel">Llama-3.3-70B · Groq</div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <div class="status-dot done"></div>
+              <div class="toggle-chevron">▼</div>
+            </div>
+          </div>
+          <div class="agent-body">
+            <div class="output-label">Strategy Output</div>
+            <div class="output-text">Win condition: dominate on ecosystem maturity and developer velocity. Key claims: PyPI breadth, async performance with FastAPI, data/ML integration. Anticipate: JS event loop argument. Counter: Python's asyncio is equally non-blocking, and type safety via Pydantic exceeds JS runtime guarantees.</div>
+          </div>
+        </div>
+
+        <div class="flow-arrow">↓</div>
+
+        <div class="agent-card done-a" onclick="toggleAgent(this)">
+          <div class="agent-header">
+            <div class="agent-name-row">
+              <div class="agent-icon">R</div>
+              <div>
+                <div class="agent-label">Researcher</div>
+                <div class="agent-sublabel">Llama-3.3-70B · Tavily</div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <div class="status-dot done"></div>
+              <div class="toggle-chevron">▼</div>
+            </div>
+          </div>
+          <div class="agent-body">
+            <div class="output-label">Evidence Document</div>
+            <div class="output-text">Source 1 (StackOverflow Dev Survey 2024): Python ranked #1 most-used language for backend. Source 2 (TechEmpower benchmarks): FastAPI ranked 4th overall, outperforming Django/Flask by 3x. Source 3 (PyPI stats): 500k+ packages indexed. All claims grounded in verifiable data.</div>
+          </div>
+        </div>
+
+        <div class="flow-arrow">↓</div>
+
+        <div class="agent-card done-a" onclick="toggleAgent(this)">
+          <div class="agent-header">
+            <div class="agent-name-row">
+              <div class="agent-icon">C</div>
+              <div>
+                <div class="agent-label">Critic</div>
+                <div class="agent-sublabel">Llama-3.3-70B · No tools</div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <div class="status-dot done"></div>
+              <div class="toggle-chevron">▼</div>
+            </div>
+          </div>
+          <div class="agent-body">
+            <div class="output-label">Audit Result</div>
+            <div class="output-text">Verified: TechEmpower benchmark claim matches source. StackOverflow survey citation is accurate for 2024. PyPI count is plausible — no hallucination detected. Evidence supports strategy without gaps.</div>
+            <div class="critic-verdict approved">✓ APPROVED — attempt 1</div>
+          </div>
+        </div>
+
+        <div class="flow-arrow">↓</div>
+
+        <div class="agent-card done-a" onclick="toggleAgent(this)">
+          <div class="agent-header">
+            <div class="agent-name-row">
+              <div class="agent-icon">Sp</div>
+              <div>
+                <div class="agent-label">Speaker</div>
+                <div class="agent-sublabel">Llama-3.3-70B · Character locked</div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <div class="status-dot done"></div>
+              <div class="toggle-chevron">▼</div>
+            </div>
+          </div>
+          <div class="agent-body">
+            <div class="output-label">Final Argument</div>
+            <div class="output-text">Python isn't just a language — it's a production-proven platform. FastAPI outperforms the average Node.js framework in raw throughput while giving you Pydantic-validated schemas, auto-generated OpenAPI docs, and seamless ML pipeline integration. The data is clear: Python dominates backend in 2024, and for good reason.</div>
+          </div>
+        </div>
+
+        <div class="speaker-output">
+          <div class="output-label">Public Argument — Round I</div>
+          <div class="speaker-text">"Python isn't just a language — it's a production-proven platform. FastAPI outperforms the average Node.js framework in raw throughput while giving you Pydantic-validated schemas, auto-generated OpenAPI docs, and seamless ML pipeline integration. The data is clear: Python dominates backend in 2024, and for good reason."</div>
+        </div>
+      </div>
+
+      <div class="connector-col">
+        <div class="vs-divider">VS</div>
+        <div class="flow-line"></div>
+      </div>
+
+      <div class="team-col team-b">
+        <div class="team-header">
+          <div class="team-badge">Team B</div>
+        </div>
+        <div class="team-position">Arguing for: JavaScript</div>
+
+        <div class="agent-card done-b" onclick="toggleAgent(this)">
+          <div class="agent-header">
+            <div class="agent-name-row">
+              <div class="agent-icon">S</div>
+              <div>
+                <div class="agent-label">Strategist</div>
+                <div class="agent-sublabel">Llama-3.3-70B · Groq</div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <div class="status-dot done"></div>
+              <div class="toggle-chevron">▼</div>
+            </div>
+          </div>
+          <div class="agent-body">
+            <div class="output-label">Strategy Output</div>
+            <div class="output-text">Win condition: unified full-stack language advantage and npm dominance. Key claims: Node.js event loop non-blocking I/O, isomorphic code reuse, npm has 2M+ packages. Anticipate: Python async counter. Pre-empt: JS was built async-first; Python bolted it on.</div>
+          </div>
+        </div>
+
+        <div class="flow-arrow">↓</div>
+
+        <div class="agent-card done-b" onclick="toggleAgent(this)">
+          <div class="agent-header">
+            <div class="agent-name-row">
+              <div class="agent-icon">R</div>
+              <div>
+                <div class="agent-label">Researcher</div>
+                <div class="agent-sublabel">Llama-3.3-70B · Tavily</div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <div class="status-dot done"></div>
+              <div class="toggle-chevron">▼</div>
+            </div>
+          </div>
+          <div class="agent-body">
+            <div class="output-label">Evidence Document (Attempt 2)</div>
+            <div class="output-text">Attempt 1: Tavily returned 0 results for "Node.js benchmark 2024 superiority" — flagged. Attempt 2: broader query "Node.js vs Python backend performance" returned 3 results. npm package count: 2.1M (npmjs.com verified). Netflix/LinkedIn migration case studies found.</div>
+          </div>
+        </div>
+
+        <div class="flow-arrow">↓</div>
+
+        <div class="agent-card done-b" onclick="toggleAgent(this)">
+          <div class="agent-header">
+            <div class="agent-name-row">
+              <div class="agent-icon">C</div>
+              <div>
+                <div class="agent-label">Critic</div>
+                <div class="agent-sublabel">Llama-3.3-70B · No tools</div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <div class="status-dot done"></div>
+              <div class="toggle-chevron">▼</div>
+            </div>
+          </div>
+          <div class="agent-body">
+            <div class="output-label">Audit Result (Retry 1)</div>
+            <div class="output-text">First pass rejected: evidence too thin, Tavily failure flagged. Second pass: npm count verified, Netflix migration case study cross-referenced. Claim about JS event loop advantage is architecturally sound.</div>
+            <div style="display:flex;gap:6px;align-items:center;margin-top:8px;flex-wrap:wrap">
+              <div class="critic-verdict rejected">✗ REJECTED — attempt 1</div>
+              <div class="retry-badge">retry 1/2</div>
+              <div class="critic-verdict approved">✓ APPROVED — attempt 2</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="flow-arrow">↓</div>
+
+        <div class="agent-card done-b" onclick="toggleAgent(this)">
+          <div class="agent-header">
+            <div class="agent-name-row">
+              <div class="agent-icon">Sp</div>
+              <div>
+                <div class="agent-label">Speaker</div>
+                <div class="agent-sublabel">Llama-3.3-70B · Character locked</div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <div class="status-dot done"></div>
+              <div class="toggle-chevron">▼</div>
+            </div>
+          </div>
+          <div class="agent-body">
+            <div class="output-label">Final Argument</div>
+            <div class="output-text">JavaScript is the only language that runs natively in browser AND server with identical code. Node.js's event loop was designed from day one for asynchronous I/O — not retrofitted like Python's asyncio. Netflix and LinkedIn rewrote their backends in Node.js for a reason.</div>
+          </div>
+        </div>
+
+        <div class="speaker-output">
+          <div class="output-label">Public Argument — Round I</div>
+          <div class="speaker-text">"JavaScript is the only language that runs natively in browser AND server with identical code. Node.js's event loop was designed from day one for asynchronous I/O — not retrofitted like Python's asyncio. Netflix and LinkedIn rewrote their backends in Node.js for a reason."</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="round-2" class="round-view" style="display:none">
+    <div class="arena-floor">
+      <div class="team-col team-a">
+        <div class="team-header">
+          <div class="team-badge">Team A</div>
+        </div>
+        <div class="team-position">Arguing for: Python · Reading Round I history</div>
+        <div class="agent-card done-a" onclick="toggleAgent(this)">
+          <div class="agent-header">
+            <div class="agent-name-row">
+              <div class="agent-icon">S</div>
+              <div>
+                <div class="agent-label">Strategist</div>
+                <div class="agent-sublabel">Round II — Full history</div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <div class="status-dot done"></div>
+              <div class="toggle-chevron">▼</div>
+            </div>
+          </div>
+          <div class="agent-body">
+            <div class="output-label">Round II Strategy</div>
+            <div class="output-text">Opponent's Round I gap: Netflix/LinkedIn migration argument is old and cherry-picked. Neither company runs pure Node.js anymore. Attack: Netflix uses Go and Python for most services today. Counter their async-first claim: Python's asyncio + uvloop matches Node.js throughput in benchmarks.</div>
+          </div>
+        </div>
+        <div class="flow-arrow">↓</div>
+        <div class="agent-card active" onclick="toggleAgent(this)">
+          <div class="agent-header">
+            <div class="agent-name-row">
+              <div class="agent-icon">R</div>
+              <div>
+                <div class="agent-label">Researcher</div>
+                <div class="agent-sublabel">Searching...</div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <div class="status-dot running"></div>
+              <div class="toggle-chevron">▼</div>
+            </div>
+          </div>
+          <div class="agent-body">
+            <div class="output-label">Searching</div>
+            <div class="output-text" style="color:var(--text-faint)">Querying: "Netflix backend language stack 2024" · "uvloop vs Node.js benchmark" · "Python async performance TechEmpower"…</div>
+          </div>
+        </div>
+        <div class="flow-arrow">↓</div>
+        <div class="agent-card" onclick="toggleAgent(this)">
+          <div class="agent-header">
+            <div class="agent-name-row">
+              <div class="agent-icon">C</div>
+              <div>
+                <div class="agent-label">Critic</div>
+                <div class="agent-sublabel">Waiting</div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <div class="status-dot idle"></div>
+              <div class="toggle-chevron">▼</div>
+            </div>
+          </div>
+        </div>
+        <div class="flow-arrow">↓</div>
+        <div class="agent-card" onclick="toggleAgent(this)">
+          <div class="agent-header">
+            <div class="agent-name-row">
+              <div class="agent-icon">Sp</div>
+              <div>
+                <div class="agent-label">Speaker</div>
+                <div class="agent-sublabel">Waiting</div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <div class="status-dot idle"></div>
+              <div class="toggle-chevron">▼</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="connector-col">
+        <div class="vs-divider">VS</div>
+        <div class="flow-line"></div>
+      </div>
+
+      <div class="team-col team-b">
+        <div class="team-header">
+          <div class="team-badge">Team B</div>
+        </div>
+        <div class="team-position">Arguing for: JavaScript · Reading Round I history</div>
+        <div class="agent-card done-b" onclick="toggleAgent(this)">
+          <div class="agent-header">
+            <div class="agent-name-row">
+              <div class="agent-icon">S</div>
+              <div>
+                <div class="agent-label">Strategist</div>
+                <div class="agent-sublabel">Round II — Full history</div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <div class="status-dot done"></div>
+              <div class="toggle-chevron">▼</div>
+            </div>
+          </div>
+          <div class="agent-body">
+            <div class="output-label">Round II Strategy</div>
+            <div class="output-text">Opponent's Round I gap: PyPI number without quality comparison. npm ecosystem includes serverless tooling, edge runtimes (Cloudflare Workers, Deno Deploy) that Python cannot match. Push harder on full-stack unification — this is 2024's most in-demand skillset.</div>
+          </div>
+        </div>
+        <div class="flow-arrow">↓</div>
+        <div class="agent-card active" onclick="toggleAgent(this)">
+          <div class="agent-header">
+            <div class="agent-name-row">
+              <div class="agent-icon">R</div>
+              <div>
+                <div class="agent-label">Researcher</div>
+                <div class="agent-sublabel">Searching...</div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <div class="status-dot running"></div>
+              <div class="toggle-chevron">▼</div>
+            </div>
+          </div>
+          <div class="agent-body">
+            <div class="output-label">Searching</div>
+            <div class="output-text" style="color:var(--text-faint)">Querying: "Cloudflare Workers Python support 2024" · "Deno JS edge runtime" · "full-stack JS developer demand 2024"…</div>
+          </div>
+        </div>
+        <div class="flow-arrow">↓</div>
+        <div class="agent-card" onclick="toggleAgent(this)">
+          <div class="agent-header">
+            <div class="agent-name-row">
+              <div class="agent-icon">C</div>
+              <div>
+                <div class="agent-label">Critic</div>
+                <div class="agent-sublabel">Waiting</div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <div class="status-dot idle"></div>
+            </div>
+          </div>
+        </div>
+        <div class="flow-arrow">↓</div>
+        <div class="agent-card" onclick="toggleAgent(this)">
+          <div class="agent-header">
+            <div class="agent-name-row">
+              <div class="agent-icon">Sp</div>
+              <div>
+                <div class="agent-label">Speaker</div>
+                <div class="agent-sublabel">Waiting</div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <div class="status-dot idle"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="round-3" class="round-view" style="display:none">
+    <div style="padding: 1.5rem 1rem 0;">
+      <div class="judge-header">
+        <div class="judge-title">Judge Panel</div>
+        <div class="judge-subtitle">Isolated · Transcript Only · Gemini 2.5 Pro</div>
+      </div>
+
+      <div class="judge-grid">
+        <div class="judge-card">
+          <div class="judge-card-header">
+            <div class="judge-icon">⚖</div>
+            <div>
+              <div class="judge-card-name">Clerk</div>
+              <div class="judge-card-sub">Fact verifier · Tavily</div>
+            </div>
+          </div>
+          <div class="judge-card-body">
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text-faint);letter-spacing:1px;margin-bottom:8px;">TRUTH REPORT</div>
+            <div class="claim-row">
+              <div class="claim-badge verified">VERIFIED</div>
+              <div class="claim-text">Team A: FastAPI top-4 TechEmpower benchmark</div>
+            </div>
+            <div class="claim-row">
+              <div class="claim-badge verified">VERIFIED</div>
+              <div class="claim-text">Team A: Python #1 StackOverflow survey 2024</div>
+            </div>
+            <div class="claim-row">
+              <div class="claim-badge false">FALSE</div>
+              <div class="claim-text">Team B: Netflix "rewrote backend" in Node.js — misleading, partial migration only</div>
+            </div>
+            <div class="claim-row">
+              <div class="claim-badge verified">VERIFIED</div>
+              <div class="claim-text">Team B: npm 2.1M+ packages count</div>
+            </div>
+            <div class="claim-row">
+              <div class="claim-badge unverified">UNVERIFIED</div>
+              <div class="claim-text">Team B: LinkedIn "rewrote backend" — no current primary source found</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="judge-card">
+          <div class="judge-card-header">
+            <div class="judge-icon">🧠</div>
+            <div>
+              <div class="judge-card-name">Analyst</div>
+              <div class="judge-card-sub">Logic scorer · No tools</div>
+            </div>
+          </div>
+          <div class="judge-card-body">
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text-faint);letter-spacing:1px;margin-bottom:10px;">SCORING</div>
+            <div class="metric-bars">
+              <div class="metric-row">
+                <div class="metric-val-a">8</div>
+                <div class="bar-track" style="direction:ltr;display:flex;gap:1px">
+                  <div class="bar-a" style="flex:8"></div>
+                  <div class="bar-b" style="flex:5"></div>
+                </div>
+                <div class="metric-val-b" style="text-align:left">5</div>
+                <div style="font-size:10px;color:var(--text-faint);font-family:'IBM Plex Mono',monospace;width:80px;margin-left:4px">Factual acc.</div>
+              </div>
+              <div class="metric-row">
+                <div class="metric-val-a">7</div>
+                <div class="bar-track">
+                  <div class="bar-a" style="flex:7"></div>
+                  <div class="bar-b" style="flex:6"></div>
+                </div>
+                <div class="metric-val-b" style="text-align:left">6</div>
+                <div style="font-size:10px;color:var(--text-faint);font-family:'IBM Plex Mono',monospace;width:80px;margin-left:4px">Logic</div>
+              </div>
+              <div class="metric-row">
+                <div class="metric-val-a">9</div>
+                <div class="bar-track">
+                  <div class="bar-a" style="flex:9"></div>
+                  <div class="bar-b" style="flex:6"></div>
+                </div>
+                <div class="metric-val-b" style="text-align:left">6</div>
+                <div style="font-size:10px;color:var(--text-faint);font-family:'IBM Plex Mono',monospace;width:80px;margin-left:4px">Rebuttals</div>
+              </div>
+            </div>
+            <div class="analysis-text">Team B penalized for hallucinated Netflix migration claim. Team A's TechEmpower evidence was directly on-point and uncontested. Team B's event-loop argument was strong in principle but unsupported by current data.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="verdict-banner">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text-faint);letter-spacing:2px;margin-bottom:8px;">FINAL VERDICT</div>
+        <div class="verdict-winner">Team A wins — Python</div>
+        <div class="verdict-sub">Margin: factual accuracy and evidence quality</div>
+        <div class="score-row">
+          <div class="score-side team-a">
+            <div class="score-num">8.0</div>
+            <div class="score-label">Team A · Python</div>
+          </div>
+          <div class="score-vs">vs</div>
+          <div class="score-side team-b">
+            <div class="score-num">5.7</div>
+            <div class="score-label">Team B · JavaScript</div>
+          </div>
+        </div>
+        <div style="font-size:11px;color:var(--text-faint);border-top:1px solid var(--border);padding-top:10px;text-align:left;font-family:'IBM Plex Mono',monospace">
+          PENALTIES: Team B −1.5 pts · hallucinated Netflix/LinkedIn claim detected by Clerk
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function switchRound(n, el) {
+  document.querySelectorAll('.round-view').forEach(v => v.style.display = 'none');
+  document.getElementById('round-' + n).style.display = 'block';
+  document.querySelectorAll('.round-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function toggleAgent(card) {
+  const body = card.querySelector('.agent-body');
+  const chev = card.querySelector('.toggle-chevron');
+  if (!body) return;
+  const isOpen = body.classList.contains('open');
+  body.classList.toggle('open', !isOpen);
+  if (chev) chev.classList.toggle('open', !isOpen);
+}
+</script>

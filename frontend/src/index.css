@@ -1,0 +1,53 @@
+:root {
+  --arena-bg: #f4f4f9;
+  --surface: #ffffff;
+  --surface2: #f0f0f5;
+  --surface3: #e6e6ed;
+  --border: rgba(0, 0, 0, 0.08);
+  --border-bright: rgba(0, 0, 0, 0.15);
+  --team-a: #3b82f6;
+  --team-a-dim: rgba(59, 130, 246, 0.08);
+  --team-b: #ef4444;
+  --team-b-dim: rgba(239, 68, 68, 0.08);
+  --gold: #b8860b;
+  --gold-dim: rgba(184, 134, 11, 0.08);
+  --text: #1a1a2e;
+  --text-dim: #555570;
+  --text-faint: #8888aa;
+  --green: #16a34a;
+  --amber: #d97706;
+
+  font: 18px/1.6 "IBM Plex Sans", sans-serif;
+  color: var(--text);
+  background: var(--arena-bg);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  min-height: 100vh;
+  background: var(--arena-bg);
+  color: var(--text);
+}
+
+#root {
+  min-height: 100svh;
+}
+
+a {
+  color: inherit;
+}
+
+button,
+input {
+  font: inherit;
+  color: inherit;
+}

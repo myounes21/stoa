@@ -1,0 +1,201 @@
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500&display=swap');
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --surface: #141418; --surface2: #1c1c22; --surface3: #24242c;
+  --border: rgba(255,255,255,0.08); --border-bright: rgba(255,255,255,0.15);
+  --team-a: #4a9eff; --team-a-dim: rgba(74,158,255,0.12);
+  --team-b: #ff6b6b; --team-b-dim: rgba(255,107,107,0.12);
+  --gold: #f0c060; --gold-dim: rgba(240,192,96,0.12);
+  --text: #e8e8f0; --text-dim: #888899; --text-faint: #444455;
+  --green: #4ade80; --amber: #fbbf24;
+}
+body { background: #0d0d0f; font-family: 'IBM Plex Sans', sans-serif; color: var(--text); }
+.root { max-width: 860px; margin: 0 auto; padding: 1.5rem 1rem 2rem; }
+
+.judge-header { text-align: center; margin-bottom: 1.5rem; }
+.judge-title { font-family: 'Cinzel', serif; font-size: 18px; color: var(--gold); letter-spacing: 2px; }
+.judge-subtitle { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--text-faint); margin-top: 4px; letter-spacing: 1px; }
+
+.judge-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+.judge-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+.judge-card-header { padding: 8px 12px; background: var(--surface2); display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--border); }
+.judge-icon { width: 26px; height: 26px; border-radius: 50%; background: var(--gold-dim); display: flex; align-items: center; justify-content: center; font-size: 13px; color: var(--gold); flex-shrink: 0; }
+.judge-card-name { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--gold); }
+.judge-card-sub { font-size: 10px; color: var(--text-faint); font-family: 'IBM Plex Mono', monospace; }
+.judge-card-body { padding: 12px; font-size: 12px; line-height: 1.7; color: var(--text-dim); }
+.section-label { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--text-faint); letter-spacing: 1px; margin-bottom: 8px; text-transform: uppercase; }
+
+.claim-row { display: flex; align-items: flex-start; gap: 8px; padding: 5px 0; border-bottom: 1px solid var(--border); }
+.claim-row:last-child { border: none; }
+.claim-badge { font-family: 'IBM Plex Mono', monospace; font-size: 9px; padding: 2px 6px; border-radius: 3px; flex-shrink: 0; margin-top: 2px; }
+.claim-badge.verified { background: rgba(74,222,128,0.12); color: var(--green); }
+.claim-badge.false { background: rgba(255,107,107,0.12); color: var(--team-b); }
+.claim-badge.unverified { background: rgba(251,191,36,0.12); color: var(--amber); }
+.claim-text { font-size: 11px; color: var(--text-dim); line-height: 1.5; }
+
+.metric-bars { display: grid; gap: 7px; margin-bottom: 12px; }
+.metric-row { display: flex; align-items: center; gap: 6px; }
+.metric-val { font-family: 'IBM Plex Mono', monospace; font-size: 11px; width: 18px; flex-shrink: 0; }
+.metric-val.a { color: var(--team-a); }
+.metric-val.b { color: var(--team-b); text-align: right; }
+.bar-track { flex: 1; height: 4px; background: var(--surface3); border-radius: 2px; display: flex; gap: 1px; overflow: hidden; }
+.bar-a { background: var(--team-a); border-radius: 2px 0 0 2px; }
+.bar-b { background: var(--team-b); border-radius: 0 2px 2px 0; }
+.metric-name { font-size: 10px; color: var(--text-faint); font-family: 'IBM Plex Mono', monospace; width: 86px; flex-shrink: 0; }
+.analyst-written { border-top: 1px solid var(--border); padding-top: 10px; }
+.analyst-written p { font-size: 12px; line-height: 1.75; color: var(--text-dim); margin-bottom: 8px; }
+.analyst-written p:last-child { margin-bottom: 0; }
+.team-ref-a { color: var(--team-a); font-weight: 500; }
+.team-ref-b { color: var(--team-b); font-weight: 500; }
+
+.verdict-banner { background: var(--surface); border: 1px solid rgba(240,192,96,0.2); border-radius: 10px; padding: 20px; }
+.verdict-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.verdict-winner-block { }
+.verdict-eyebrow { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--text-faint); letter-spacing: 2px; margin-bottom: 6px; }
+.verdict-winner { font-family: 'Cinzel', serif; font-size: 24px; color: var(--gold); }
+.verdict-margin { font-size: 12px; color: var(--text-dim); margin-top: 4px; }
+.score-block { display: flex; gap: 20px; align-items: center; }
+.score-side { text-align: center; }
+.score-num { font-family: 'IBM Plex Mono', monospace; font-size: 30px; font-weight: 500; }
+.score-num.a { color: var(--team-a); }
+.score-num.b { color: var(--team-b); }
+.score-label { font-size: 10px; color: var(--text-faint); font-family: 'IBM Plex Mono', monospace; margin-top: 2px; }
+.score-vs { font-family: 'Cinzel', serif; font-size: 13px; color: var(--text-faint); }
+
+.verdict-statement { border-top: 1px solid var(--border); padding-top: 16px; }
+.statement-label { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--gold); letter-spacing: 2px; margin-bottom: 12px; }
+.statement-body { font-size: 13px; line-height: 1.85; color: var(--text); }
+.statement-body p { margin-bottom: 10px; }
+.statement-body p:last-child { margin-bottom: 0; }
+
+.penalty-row { display: flex; align-items: center; gap: 8px; margin-top: 14px; padding: 8px 12px; background: rgba(255,107,107,0.06); border: 1px solid rgba(255,107,107,0.15); border-radius: 6px; }
+.penalty-icon { font-size: 12px; color: var(--team-b); font-family: 'IBM Plex Mono', monospace; }
+.penalty-text { font-size: 11px; color: var(--text-dim); font-family: 'IBM Plex Mono', monospace; }
+</style>
+
+<div class="root">
+  <div class="judge-header">
+    <div class="judge-title">Judge Panel</div>
+    <div class="judge-subtitle">Isolated · Transcript only · Gemini 2.5 Pro</div>
+  </div>
+
+  <div class="judge-grid">
+    <div class="judge-card">
+      <div class="judge-card-header">
+        <div class="judge-icon">⚖</div>
+        <div>
+          <div class="judge-card-name">Clerk</div>
+          <div class="judge-card-sub">Fact verifier · Tavily</div>
+        </div>
+      </div>
+      <div class="judge-card-body">
+        <div class="section-label">Truth Report</div>
+        <div class="claim-row">
+          <div class="claim-badge verified">VERIFIED</div>
+          <div class="claim-text">Team A: FastAPI top-4 TechEmpower benchmark (Round I)</div>
+        </div>
+        <div class="claim-row">
+          <div class="claim-badge verified">VERIFIED</div>
+          <div class="claim-text">Team A: Python #1 StackOverflow survey 2024 (Round I)</div>
+        </div>
+        <div class="claim-row">
+          <div class="claim-badge verified">VERIFIED</div>
+          <div class="claim-text">Team A: Netflix uses Python and Go for most services today (Round II)</div>
+        </div>
+        <div class="claim-row">
+          <div class="claim-badge false">FALSE</div>
+          <div class="claim-text">Team B: Netflix "rewrote backend in Node.js" — partial 2012 migration only, since reversed (Round I)</div>
+        </div>
+        <div class="claim-row">
+          <div class="claim-badge unverified">UNVERIFIED</div>
+          <div class="claim-text">Team B: LinkedIn "rewrote backend" — no current primary source found (Round I)</div>
+        </div>
+        <div class="claim-row">
+          <div class="claim-badge verified">VERIFIED</div>
+          <div class="claim-text">Team B: npm 2.1M+ packages (Round I)</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="judge-card">
+      <div class="judge-card-header">
+        <div class="judge-icon">🧠</div>
+        <div>
+          <div class="judge-card-name">Analyst</div>
+          <div class="judge-card-sub">Logic scorer · Truth Report input</div>
+        </div>
+      </div>
+      <div class="judge-card-body">
+        <div class="section-label">Logic Scores</div>
+        <div class="metric-bars">
+          <div class="metric-row">
+            <div class="metric-val a">8</div>
+            <div class="bar-track"><div class="bar-a" style="flex:8"></div><div class="bar-b" style="flex:5"></div></div>
+            <div class="metric-val b">5</div>
+            <div class="metric-name">Factual accuracy</div>
+          </div>
+          <div class="metric-row">
+            <div class="metric-val a">7</div>
+            <div class="bar-track"><div class="bar-a" style="flex:7"></div><div class="bar-b" style="flex:6"></div></div>
+            <div class="metric-val b">6</div>
+            <div class="metric-name">Logical consistency</div>
+          </div>
+          <div class="metric-row">
+            <div class="metric-val a">9</div>
+            <div class="bar-track"><div class="bar-a" style="flex:9"></div><div class="bar-b" style="flex:6"></div></div>
+            <div class="metric-val b">6</div>
+            <div class="metric-name">Rebuttal effectiveness</div>
+          </div>
+          <div class="metric-row">
+            <div class="metric-val a" style="font-size:12px;font-weight:500">8.0</div>
+            <div class="bar-track"><div class="bar-a" style="flex:80"></div><div class="bar-b" style="flex:57"></div></div>
+            <div class="metric-val b" style="font-size:12px;font-weight:500">5.7</div>
+            <div class="metric-name" style="color:var(--text-dim)">Overall</div>
+          </div>
+        </div>
+        <div class="analyst-written">
+          <p><span class="team-ref-a">Team A</span> consistently grounded every claim in current, verifiable sources and exploited Team B's Round I hallucination effectively in Round II, forcing a credibility collapse.</p>
+          <p><span class="team-ref-b">Team B</span>'s event-loop argument was architecturally sound but unsupported by 2024 benchmarks. The Netflix claim — presented as a decisive proof — was factually false, and no recovery attempt was made.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="verdict-banner">
+    <div class="verdict-top">
+      <div class="verdict-winner-block">
+        <div class="verdict-eyebrow">Final Verdict</div>
+        <div class="verdict-winner">Team A wins — Python</div>
+        <div class="verdict-margin">Decisive · Factual accuracy and rebuttal quality</div>
+      </div>
+      <div class="score-block">
+        <div class="score-side">
+          <div class="score-num a">8.0</div>
+          <div class="score-label">Team A · Python</div>
+        </div>
+        <div class="score-vs">vs</div>
+        <div class="score-side">
+          <div class="score-num b">5.7</div>
+          <div class="score-label">Team B · JavaScript</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="verdict-statement">
+      <div class="statement-label">Analyst's Written Statement</div>
+      <div class="statement-body">
+        <p>Team A won this debate on the strength of evidence quality and strategic adaptability across both rounds. In Round I, their Strategist correctly identified the terrain — ecosystem maturity and benchmark performance — and the Researcher delivered sources that the Clerk subsequently verified without exception. The Speaker's argument was confident, specific, and grounded in data that the opponent could not directly refute.</p>
+        <p>Team B entered Round II with an intact core argument — JavaScript's native async architecture and npm breadth — but the foundation was already damaged. The Netflix migration claim, presented in Round I as a flagship proof point, was identified by the Clerk as factually false: it referred to a partial 2012 infrastructure change that Netflix has since moved away from. No correction or retraction was attempted in Round II. This is a critical strategic failure: a debater who knows a claim has been contested and does not address it signals to any evaluator that they cannot defend it.</p>
+        <p>Team A's Round II Strategist read the debate history correctly, identified this exposed flank, and attacked it directly — demonstrating exactly the kind of adaptive reasoning this format rewards. Team B's Round II argument, while technically competent on edge runtime coverage, did not recover lost ground on factual credibility.</p>
+        <p>The margin is clear. <span class="team-ref-a">Team A</span> argued with precision and adapted under pressure. <span class="team-ref-b">Team B</span> had a valid philosophical position but failed to support it with honest evidence. In structured debate, a strong argument built on a false premise loses — and it should.</p>
+      </div>
+
+      <div class="penalty-row">
+        <div class="penalty-icon">−1.5</div>
+        <div class="penalty-text">Team B penalized · 1 hallucinated claim (Netflix) + 1 unverified claim (LinkedIn) detected by Clerk · applied to factual accuracy score</div>
+      </div>
+    </div>
+  </div>
+</div>
