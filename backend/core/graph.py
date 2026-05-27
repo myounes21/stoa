@@ -111,8 +111,7 @@ def build_graph():
     )
 
     # Fan-in: both speakers → collect_round
-    graph.add_edge("speaker_a", "collect_round")
-    graph.add_edge("speaker_b", "collect_round")
+    graph.add_edge(["speaker_a", "speaker_b"], "collect_round")
 
     # Round router: loop back or Judge panel
     graph.add_conditional_edges(

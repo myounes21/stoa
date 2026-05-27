@@ -13,10 +13,12 @@ dependencies = [
     "langchain-google-genai>=3.2.0",
     "langchain-groq>=1.1.2",
     "pydantic-settings>=2.13.1",
+    "pyyaml>=6.0.2",
     "tavily>=1.1.0",
     "uvicorn>=0.47.0",
 ]
 
 [dependency-groups]
 dev = [
+    "websockets>=15.0.1",
 ]

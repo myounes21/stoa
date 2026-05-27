@@ -1835,8 +1835,14 @@ dependencies = [
     { name = "langchain-google-genai" },
     { name = "langchain-groq" },
     { name = "pydantic-settings" },
+    { name = "pyyaml" },
     { name = "tavily" },
     { name = "uvicorn" },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "websockets" },
 ]
 
 [package.metadata]
@@ -1849,12 +1855,13 @@ requires-dist = [
     { name = "langchain-google-genai", specifier = ">=3.2.0" },
     { name = "langchain-groq", specifier = ">=1.1.2" },
     { name = "pydantic-settings", specifier = ">=2.13.1" },
+    { name = "pyyaml", specifier = ">=6.0.2" },
     { name = "tavily", specifier = ">=1.1.0" },
     { name = "uvicorn", specifier = ">=0.47.0" },
 ]
 
 [package.metadata.requires-dev]
-dev = []
+dev = [{ name = "websockets", specifier = ">=15.0.1" }]
 
 [[package]]
 name = "tavily"

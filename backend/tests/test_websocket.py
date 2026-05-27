@@ -1,9 +1,10 @@
 import asyncio
 import json
+import os
 import websockets
 
 async def main():
-    uri = "ws://localhost:8001/ws/debate"
+    uri = os.getenv("STOA_WS_URL", "ws://localhost:8000/ws/debate")
 
     print("=" * 60)
     print("STOA WEBSOCKET TEST")

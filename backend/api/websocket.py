@@ -36,6 +36,29 @@ def _build_initial_state(query: str) -> STOAState:
     }
 
 
+def _safe_json_loads(value):
+    if value is None:
+        return None
+    if isinstance(value, (dict, list)):
+        return value
+    if isinstance(value, str):
+        try:
+            return json.loads(value)
+        except json.JSONDecodeError:
+            return None
+    return None
+
+
+async def _send_error(websocket: WebSocket, message: str, code: int = 1003) -> None:
+    try:
+        await websocket.send_json({"type": "error", "message": message})
+    finally:
+        try:
+            await websocket.close(code=code)
+        except Exception:
+            pass
+
+
 def _format_node_update(node_name: str, output: dict) -> dict | None:
     """Map a LangGraph node output to a typed WebSocket message."""
 
@@ -53,6 +76,7 @@ def _format_node_update(node_name: str, output: dict) -> dict | None:
                     "team_a_goal": manifest.get("team_a", {}).get("mission_goal"),
                     "team_b_goal": manifest.get("team_b", {}).get("mission_goal"),
                     "judicial_focus": manifest.get("judicial_focus", []),
+                    "max_rounds": output.get("max_rounds")
                 }
             }
         if output.get("clarification_needed"):
@@ -111,20 +135,22 @@ def _format_node_update(node_name: str, output: dict) -> dict | None:
     if node_name == "clerk":
         truth_report = output.get("truth_report")
         if truth_report:
+            parsed = _safe_json_loads(truth_report)
             return {
                 "type": "truth_report",
-                "data": json.loads(truth_report)
+                "data": parsed if parsed is not None else {"raw": truth_report}
             }
 
     if node_name == "analyst":
         final_verdict = output.get("final_verdict")
         if final_verdict:
+            parsed = _safe_json_loads(final_verdict)
+            verdict_payload = parsed if isinstance(parsed, dict) else {"raw": parsed or final_verdict}
+            if not verdict_payload.get("winner") and output.get("winner"):
+                verdict_payload["winner"] = output.get("winner")
             return {
                 "type": "verdict",
-                "data": {
-                    "winner": output.get("winner"),
-                    **json.loads(final_verdict)
-                }
+                "data": verdict_payload
             }
 
     return None
@@ -136,13 +162,14 @@ async def debate_endpoint(websocket: WebSocket):
 
     try:
         data = await websocket.receive_json()
-        query = data.get("query", "").strip()
+        raw_query = data.get("query", "")
+        if not isinstance(raw_query, str):
+            await _send_error(websocket, "Query must be a string.")
+            return
+        query = raw_query.strip()
 
         if not query:
-            await websocket.send_json({
-                "type": "error",
-                "message": "No query provided."
-            })
+            await _send_error(websocket, "No query provided.")
             return
 
         initial_state = _build_initial_state(query)
@@ -157,8 +184,15 @@ async def debate_endpoint(websocket: WebSocket):
                     await websocket.send_json(message)
 
         await websocket.send_json({"type": "complete"})
+        try:
+            await websocket.close(code=1000)
+        except Exception:
+            pass
 
     except WebSocketDisconnect:
         pass
     except Exception as e:
-        await websocket.send_json({"type": "error", "message": str(e)})
+        try:
+            await websocket.send_json({"type": "error", "message": str(e)})
+        except Exception:
+            pass

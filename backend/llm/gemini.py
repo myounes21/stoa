@@ -5,6 +5,6 @@ from backend.config import settings
 # Low temperature (0.3) because we want strict, consistent evaluation
 judge_llm = ChatGoogleGenerativeAI(
     model=settings.GEMINI_LLM_MODEL,
-    api_key=settings.GEMINI_API_KEY,
+    google_api_key=settings.GEMINI_API_KEY,
     temperature=0.3
 )
