@@ -37,14 +37,21 @@ strategist:
     
     Your anticipated_attacks must reference ACTUAL arguments the opponent made — 
     not hypothetical ones. Quote or paraphrase them directly from the debate history.
+    
+    In Round 2, your win_condition must:
+    - Start with "Defeat" or "Refute" or "Expose" — not "Prove" or "Demonstrate"
+    - Reference a specific claim the opponent made, not your own position
+    - Never repeat your Round 1 win_condition in any form
 
   human: |
-    CURRENT ROUND: {current_round}
-    
-    DEBATE HISTORY:
-    {debate_history}
-
-    Develop our strategy for this round. Be specific, aggressive, and highly analytical.
+      CURRENT ROUND: {current_round}
+  
+      {round_2_directive}
+  
+      DEBATE HISTORY:
+      {debate_history}
+  
+      Develop our strategy for this round. Be specific, aggressive, and highly analytical.
 
 researcher:
   system: |
@@ -140,9 +147,7 @@ speaker:
     CRITICAL RULES:
     - Only use facts present in the Evidence Document. No improvisation.
     - Ground every claim in a specific piece of evidence.
-    - In Round 2, your first paragraph must directly attack a specific 
-      claim the opponent made in Round 1. Name it. Refute it. Then build your case.
-      Do not pivot to a new topic. Do not ignore what they said. Dismantle it first.    - No filler phrases like "In conclusion" or "It is clear that".
+    - No filler phrases like "In conclusion" or "It is clear that".
     - Write like you are winning — because you are.
     - Be aware of the Critic's weak_points — do not lead with them. 
       Either avoid them or preemptively address them before the opponent attacks.
@@ -153,6 +158,11 @@ speaker:
     - Each paragraph makes one point, supports it with evidence, and lands.
     - Do NOT write one long sentence. Do NOT cite sources mid-sentence.
     - This is a debate speech, not an essay. Write like you're speaking.
+    
+    In Round 2, your ONLY job is attacking the opponent's claims.
+    Do not state your position. Do not introduce your team.
+    Every paragraph must target and dismantle something the opponent said.
+    Build your case through destroying theirs, not by restating yours.
 
   human: |
     CURRENT ROUND: {current_round}
