@@ -1,6 +1,33 @@
 import { Fragment, useEffect, useMemo, useRef, useState, useCallback } from "react";
 
-const WS_URL = "ws://localhost:8001/ws/debate";
+const DEFAULT_WS_URL = "ws://localhost:8000/ws/debate";
+const ROUND_LABELS = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"];
+
+const getWsCandidates = () => {
+  if (import.meta.env.VITE_WS_URL) return [import.meta.env.VITE_WS_URL];
+  if (typeof window === "undefined") return [DEFAULT_WS_URL];
+
+  const wsProtocol = window.location.protocol === "https:" ? "wss" : "ws";
+  const host = window.location.hostname || "localhost";
+  const port = window.location.port;
+  const candidates = [];
+  const currentHostUrl = `${wsProtocol}://${window.location.host}/ws/debate`;
+
+  if (host !== "localhost" && host !== "127.0.0.1") {
+    candidates.push(currentHostUrl);
+  } else if (!port || port === "8000" || port === "8001") {
+    candidates.push(currentHostUrl);
+  }
+
+  if (host === "localhost" || host === "127.0.0.1") {
+    ["8000", "8001"].forEach((candidatePort) => {
+      const url = `${wsProtocol}://${host}:${candidatePort}/ws/debate`;
+      if (!candidates.includes(url)) candidates.push(url);
+    });
+  }
+
+  return candidates.length ? candidates : [DEFAULT_WS_URL];
+};
 
 const AGENTS = ["Strategist", "Researcher", "Critic", "Speaker"];
 
@@ -49,6 +76,7 @@ function useDebate() {
   const [missionGoals, setMissionGoals] = useState({ A: "", B: "" });
   const [judicialFocus, setJudicialFocus] = useState([]);
   const [round, setRound] = useState(1);
+  const [maxRounds, setMaxRounds] = useState(2);
   const roundRef = useRef(1);
   const [agentStates, setAgentStates] = useState({
     A: { Strategist: STATUS.IDLE, Researcher: STATUS.IDLE, Critic: STATUS.IDLE, Speaker: STATUS.IDLE },
@@ -66,6 +94,7 @@ function useDebate() {
   const [originalQuery, setOriginalQuery] = useState("");
   const [roundBanner, setRoundBanner] = useState(null);
   const wsRef = useRef(null);
+  const wsAttemptsRef = useRef(0);
 
   const setAgentStatus = useCallback((team, agent, statusValue) => {
     setAgentStates(prev => ({
@@ -106,123 +135,166 @@ function useDebate() {
       B: { Strategist: STATUS.IDLE, Researcher: STATUS.IDLE, Critic: STATUS.IDLE, Speaker: STATUS.IDLE },
     });
     setRound(1);
+    setMaxRounds(2);
     roundRef.current = 1;
 
-    const ws = new WebSocket(WS_URL);
-    wsRef.current = ws;
+    const candidates = getWsCandidates();
 
-    ws.onopen = () => {
-      ws.send(JSON.stringify({ query }));
-      setStatus("Debate in progress...");
-    };
-
-    ws.onmessage = (event) => {
-      const msg = JSON.parse(event.data);
-
-      if (msg.type === "arena_ready") {
-        setPhase("debate");
-        setTopic(msg.data.topic);
-        setTeams({ A: msg.data.team_a, B: msg.data.team_b });
-        setStances({ A: msg.data.team_a_stance, B: msg.data.team_b_stance });
-        setMissionGoals({ A: msg.data.team_a_goal, B: msg.data.team_b_goal });
-        setJudicialFocus(toArray(msg.data.judicial_focus));
-        setStatus("Arena locked. Agents deploying...");
-        setAgentStates({
-          A: { Strategist: STATUS.ACTIVE, Researcher: STATUS.IDLE, Critic: STATUS.IDLE, Speaker: STATUS.IDLE },
-          B: { Strategist: STATUS.ACTIVE, Researcher: STATUS.IDLE, Critic: STATUS.IDLE, Speaker: STATUS.IDLE },
-        });
-      }
-
-      if (msg.type === "agent_output") {
-        const { team, agent, content, status: agentStatus } = msg.data;
-
-        let parsed = content;
-        try { parsed = JSON.parse(content); } catch { /* keep raw string */ }
-
-        setAgentOutput(team, agent, parsed);
-        appendAgentHistory(team, agent, parsed, roundRef.current);
-        setLastUpdate({ team, agent, round: roundRef.current });
-
-        const criticDecision = parsed?.status || agentStatus;
-        if (agent === "Critic") {
-          if (criticDecision === "REJECTED") {
-            setAgentStatus(team, agent, STATUS.REJECTED);
-            setStatus(`Team ${team} Critic rejected evidence - retrying...`);
-          } else {
-            setAgentStatus(team, agent, STATUS.APPROVED);
-          }
-        } else {
-          setAgentStatus(team, agent, STATUS.COMPLETE);
-        }
-
-        const idx = AGENTS.indexOf(agent);
-        if (idx < AGENTS.length - 1 && agent !== "Critic") {
-          setAgentStatus(team, AGENTS[idx + 1], STATUS.ACTIVE);
-        }
-        if (agent === "Strategist") setAgentStatus(team, "Researcher", STATUS.ACTIVE);
-        if (agent === "Researcher") setAgentStatus(team, "Critic", STATUS.ACTIVE);
-        if (criticDecision === "APPROVED") setAgentStatus(team, "Speaker", STATUS.ACTIVE);
-      }
-
-      if (msg.type === "argument") {
-        const { team, content } = msg.data;
-        setArguments(prev => ({
-          ...prev,
-          [team]: [...prev[team], { round: roundRef.current, content }]
-        }));
-        setAgentOutput(team, "Speaker", { argument: content });
-        appendAgentHistory(team, "Speaker", { argument: content }, roundRef.current);
-        setLastUpdate({ team, agent: "Speaker", round: roundRef.current });
-        setAgentStatus(team, "Speaker", STATUS.COMPLETE);
-        setStatus(`Team ${team} argument delivered.`);
-      }
-
-      if (msg.type === "round_complete") {
-        setRound(r => {
-          const nextRound = r + 1;
-          roundRef.current = nextRound;
-          return nextRound;
-        });
-        setStatus(`Round ${msg.data.round} complete. Round ${msg.data.round + 1} beginning...`);
-        setAgentStates({
-          A: { Strategist: STATUS.ACTIVE, Researcher: STATUS.IDLE, Critic: STATUS.IDLE, Speaker: STATUS.IDLE },
-          B: { Strategist: STATUS.ACTIVE, Researcher: STATUS.IDLE, Critic: STATUS.IDLE, Speaker: STATUS.IDLE },
-        });
-        setRoundBanner({ from: msg.data.round, to: msg.data.round + 1 });
-        setTimeout(() => setRoundBanner(null), 2500);
-      }
-
-      if (msg.type === "truth_report") {
-        setTruthReport(msg.data);
-        setStatus("Judges deliberating...");
-      }
-
-      if (msg.type === "verdict") {
-        setVerdict(msg.data);
-        setPhase("verdict");
-        setStatus("Debate complete.");
-      }
-
-      if (msg.type === "clarification_needed") {
-        setClarificationMessage(msg.data?.message || "Please provide two specific options to debate.");
-        setOriginalQuery(msg.data?.original_query || query);
-        setPhase("clarification");
-        setStatus("Clarification needed.");
-        ws.close();
-      }
-
-      if (msg.type === "complete") {
-        setStatus("Debate complete.");
-      }
-
-      if (msg.type === "error") {
-        setError(msg.message);
+    const connectNext = () => {
+      const candidate = candidates[wsAttemptsRef.current];
+      if (!candidate) {
+        setError("WebSocket connection failed.");
         setStatus("Error occurred.");
+        return;
       }
+
+      setStatus(`Connecting to arena (${candidate})...`);
+      const ws = new WebSocket(candidate);
+      wsRef.current = ws;
+
+      ws.onopen = () => {
+        ws.send(JSON.stringify({ query }));
+        setStatus("Debate in progress...");
+      };
+
+      ws.onmessage = (event) => {
+        let msg;
+        try {
+          msg = JSON.parse(event.data);
+        } catch {
+          setError("Invalid message from server.");
+          setStatus("Error occurred.");
+          return;
+        }
+
+        if (msg.type === "arena_ready") {
+          setPhase("debate");
+          setTopic(msg.data.topic);
+          setTeams({ A: msg.data.team_a, B: msg.data.team_b });
+          setStances({ A: msg.data.team_a_stance, B: msg.data.team_b_stance });
+          setMissionGoals({ A: msg.data.team_a_goal, B: msg.data.team_b_goal });
+          setJudicialFocus(toArray(msg.data.judicial_focus));
+          if (Number.isFinite(msg.data.max_rounds) && msg.data.max_rounds > 0) {
+            setMaxRounds(msg.data.max_rounds);
+          }
+          setStatus("Arena locked. Agents deploying...");
+          setAgentStates({
+            A: { Strategist: STATUS.ACTIVE, Researcher: STATUS.IDLE, Critic: STATUS.IDLE, Speaker: STATUS.IDLE },
+            B: { Strategist: STATUS.ACTIVE, Researcher: STATUS.IDLE, Critic: STATUS.IDLE, Speaker: STATUS.IDLE },
+          });
+        }
+
+        if (msg.type === "agent_output") {
+          const { team, agent, content, status: agentStatus } = msg.data;
+
+          let parsed = content;
+          try { parsed = JSON.parse(content); } catch { /* keep raw string */ }
+
+          setAgentOutput(team, agent, parsed);
+          appendAgentHistory(team, agent, parsed, roundRef.current);
+          setLastUpdate({ team, agent, round: roundRef.current });
+
+          const criticDecision = parsed?.status || agentStatus;
+          if (agent === "Critic") {
+            if (criticDecision === "REJECTED") {
+              setAgentStatus(team, agent, STATUS.REJECTED);
+              setAgentStatus(team, "Researcher", STATUS.ACTIVE);
+              setStatus(`Team ${team} Critic rejected evidence - retrying...`);
+            } else if (criticDecision === "APPROVED") {
+              setAgentStatus(team, agent, STATUS.APPROVED);
+            } else {
+              setAgentStatus(team, agent, STATUS.ACTIVE);
+              setStatus(`Team ${team} Critic decision pending...`);
+            }
+          } else {
+            setAgentStatus(team, agent, STATUS.COMPLETE);
+          }
+
+          const idx = AGENTS.indexOf(agent);
+          if (idx >= 0 && idx < AGENTS.length - 1 && agent !== "Critic") {
+            setAgentStatus(team, AGENTS[idx + 1], STATUS.ACTIVE);
+          }
+          if (agent === "Strategist") setAgentStatus(team, "Researcher", STATUS.ACTIVE);
+          if (agent === "Researcher") setAgentStatus(team, "Critic", STATUS.ACTIVE);
+          if (agent === "Critic" && criticDecision === "APPROVED") setAgentStatus(team, "Speaker", STATUS.ACTIVE);
+        }
+
+        if (msg.type === "argument") {
+          const { team, content } = msg.data;
+          setArguments(prev => ({
+            ...prev,
+            [team]: [...prev[team], { round: roundRef.current, content }]
+          }));
+          setAgentOutput(team, "Speaker", { argument: content });
+          appendAgentHistory(team, "Speaker", { argument: content }, roundRef.current);
+          setLastUpdate({ team, agent: "Speaker", round: roundRef.current });
+          setAgentStatus(team, "Speaker", STATUS.COMPLETE);
+          setStatus(`Team ${team} argument delivered.`);
+        }
+
+        if (msg.type === "round_complete") {
+          setRound(r => {
+            const nextRound = r + 1;
+            roundRef.current = nextRound;
+            return nextRound;
+          });
+          setStatus(`Round ${msg.data.round} complete. Round ${msg.data.round + 1} beginning...`);
+          setAgentStates({
+            A: { Strategist: STATUS.ACTIVE, Researcher: STATUS.IDLE, Critic: STATUS.IDLE, Speaker: STATUS.IDLE },
+            B: { Strategist: STATUS.ACTIVE, Researcher: STATUS.IDLE, Critic: STATUS.IDLE, Speaker: STATUS.IDLE },
+          });
+          setRoundBanner({ from: msg.data.round, to: msg.data.round + 1 });
+          setTimeout(() => setRoundBanner(null), 2500);
+        }
+
+        if (msg.type === "truth_report") {
+          setTruthReport(msg.data);
+          setStatus("Judges deliberating...");
+        }
+
+        if (msg.type === "verdict") {
+          setVerdict(msg.data);
+          setPhase("verdict");
+          setStatus("Debate complete.");
+        }
+
+        if (msg.type === "clarification_needed") {
+          setClarificationMessage(msg.data?.message || "Please provide two specific options to debate.");
+          setOriginalQuery(msg.data?.original_query || query);
+          setPhase("clarification");
+          setStatus("Clarification needed.");
+          ws.close();
+        }
+
+        if (msg.type === "complete") {
+          setStatus("Debate complete.");
+        }
+
+        if (msg.type === "error") {
+          setError(msg.message);
+          setStatus("Error occurred.");
+        }
+      };
+
+      ws.onerror = () => {};
+
+      ws.onclose = (event) => {
+        const cleanClose = event.wasClean || event.code === 1000;
+        if (cleanClose) return;
+
+        wsAttemptsRef.current += 1;
+        if (wsAttemptsRef.current < candidates.length) {
+          connectNext();
+          return;
+        }
+
+        setError("WebSocket connection failed.");
+        setStatus("Error occurred.");
+      };
     };
 
-    ws.onerror = () => setError("WebSocket connection failed.");
-    ws.onclose = () => {};
+    wsAttemptsRef.current = 0;
+    connectNext();
   }, [appendAgentHistory, query, setAgentOutput, setAgentStatus]);
 
   return {
@@ -235,6 +307,7 @@ function useDebate() {
     missionGoals,
     judicialFocus,
     round,
+    maxRounds,
     agentStates,
     agentOutputs,
     agentHistory,
@@ -488,6 +561,10 @@ function RoundView({ roundIndex, activeRound, children }) {
 
 function JudgesPanel({ truthReport, verdict, teams }) {
   const claims = toArray(truthReport?.claims);
+  const normalizedClaims = claims.map(claim => ({
+    ...claim,
+    verdictKey: claim?.verdict ? String(claim.verdict).toLowerCase() : ""
+  }));
   const penalties = toArray(verdict?.penalties);
   const winnerTeam = verdict?.winner === "Team A" ? "A" : verdict?.winner === "Team B" ? "B" : null;
   const winnerColorClass = winnerTeam ? `team-${winnerTeam.toLowerCase()}` : "";
@@ -499,6 +576,9 @@ function JudgesPanel({ truthReport, verdict, teams }) {
     ? (penaltyMatch
       ? (penaltyMatch[0].startsWith("-") ? penaltyMatch[0] : `-${penaltyMatch[0]}`)
       : "-")
+    : "";
+  const verdictSummary = verdict?.written_analysis
+    ? verdict.written_analysis.split("\n").filter(Boolean)[0]
     : "";
 
   return (
@@ -519,10 +599,10 @@ function JudgesPanel({ truthReport, verdict, teams }) {
           </div>
           <div className="judge-card-body">
             <div className="section-label">Truth Report</div>
-            {claims.length === 0 && <div className="claim-empty">Awaiting transcript review.</div>}
-            {claims.map((claim, i) => (
-              <div key={i} className="claim-row">
-                <div className={`claim-badge ${claim.verdict?.toLowerCase()}`}>{claim.verdict}</div>
+             {normalizedClaims.length === 0 && <div className="claim-empty">Awaiting transcript review.</div>}
+             {normalizedClaims.map((claim, i) => (
+               <div key={i} className="claim-row">
+                <div className={`claim-badge ${claim.verdictKey}`}>{claim.verdict}</div>
                 <div className="claim-text">{claim.team === "Team A" ? teams.A || "Team A" : teams.B || "Team B"}: {claim.claim}</div>
               </div>
             ))}
@@ -581,15 +661,15 @@ function JudgesPanel({ truthReport, verdict, teams }) {
               <div className="section-label">Claim Breakdown</div>
               <div className="claim-summary-stats">
                 <div className="claim-stat verified">
-                  <span className="claim-stat-count">{claims.filter(c => c.verdict === "verified").length}</span>
+                   <span className="claim-stat-count">{normalizedClaims.filter(c => c.verdictKey === "verified").length}</span>
                   <span className="claim-stat-label">Verified</span>
                 </div>
                 <div className="claim-stat false">
-                  <span className="claim-stat-count">{claims.filter(c => c.verdict === "false").length}</span>
+                   <span className="claim-stat-count">{normalizedClaims.filter(c => c.verdictKey === "false").length}</span>
                   <span className="claim-stat-label">False</span>
                 </div>
                 <div className="claim-stat unverified">
-                  <span className="claim-stat-count">{claims.filter(c => c.verdict === "unverified").length}</span>
+                   <span className="claim-stat-count">{normalizedClaims.filter(c => c.verdictKey === "unverified").length}</span>
                   <span className="claim-stat-label">Unverified</span>
                 </div>
               </div>
@@ -602,12 +682,14 @@ function JudgesPanel({ truthReport, verdict, teams }) {
         <div className="verdict-top">
           <div className="verdict-winner-block">
             <div className="verdict-eyebrow">Final Verdict</div>
-            <div className="verdict-winner">
-              {verdict?.winner
-                ? `${winnerLabel || verdict.winner} wins`
-                : "Pending verdict"}
-            </div>
-            <div className="verdict-margin">{verdict?.summary || "Decisive - factual accuracy and rebuttal quality"}</div>
+             <div className="verdict-winner">
+               {verdict?.winner
+                 ? (verdict.winner === "Draw"
+                   ? "Draw"
+                   : `${winnerLabel || verdict.winner} wins`)
+                 : "Pending verdict"}
+             </div>
+             <div className="verdict-margin">{verdictSummary || "Decisive - factual accuracy and rebuttal quality"}</div>
           </div>
           <div className="score-block">
             <div className="score-side">
@@ -655,6 +737,7 @@ export default function App() {
     stances,
     judicialFocus,
     round,
+    maxRounds,
     agentStates,
     agentHistory,
     verdict,
@@ -670,18 +753,16 @@ export default function App() {
   const [activeRound, setActiveRound] = useState(1);
 
   useEffect(() => {
+    const verdictRound = maxRounds + 1;
     if (phase === "verdict") {
-      setActiveRound(3);
+      setActiveRound(verdictRound);
       return;
     }
     if (phase === "debate") {
-      if (round >= 2) {
-        setActiveRound(Math.min(round, 2));
-        return;
-      }
-      setActiveRound(1);
+      const cappedRound = Math.max(1, Math.min(round, maxRounds));
+      setActiveRound(cappedRound);
     }
-  }, [phase, round]);
+  }, [phase, round, maxRounds]);
 
   const latestByAgent = useMemo(() => {
     const latest = { A: {}, B: {} };
@@ -702,9 +783,11 @@ export default function App() {
   const headerTopic = topic || "Awaiting topic";
 
   const roundTabs = [
-    { id: 1, label: "Round I" },
-    { id: 2, label: "Round II" },
-    { id: 3, label: "Verdict" },
+    ...Array.from({ length: maxRounds }, (_, i) => ({
+      id: i + 1,
+      label: `Round ${ROUND_LABELS[i] || i + 1}`
+    })),
+    { id: maxRounds + 1, label: "Verdict" }
   ];
 
   return (
@@ -847,57 +930,34 @@ export default function App() {
             </div>
           )}
 
-          <RoundView roundIndex={1} activeRound={activeRound}>
-            <div className="arena-floor">
-              <TeamColumn
-                team="A"
-                name={teams.A}
-                stance={stances.A}
-                agentStates={agentStates.A}
-                latestByAgent={latestByAgent.A}
-                round={1}
-              />
-              <div className="connector-col">
-                <div className="vs-divider">VS</div>
-                <div className="flow-line"></div>
+          {Array.from({ length: maxRounds }, (_, i) => (
+            <RoundView roundIndex={i + 1} activeRound={activeRound} key={`round-${i + 1}`}>
+              <div className="arena-floor">
+                <TeamColumn
+                  team="A"
+                  name={teams.A}
+                  stance={stances.A}
+                  agentStates={agentStates.A}
+                  latestByAgent={latestByAgent.A}
+                  round={i + 1}
+                />
+                <div className="connector-col">
+                  <div className="vs-divider">VS</div>
+                  <div className="flow-line"></div>
+                </div>
+                <TeamColumn
+                  team="B"
+                  name={teams.B}
+                  stance={stances.B}
+                  agentStates={agentStates.B}
+                  latestByAgent={latestByAgent.B}
+                  round={i + 1}
+                />
               </div>
-              <TeamColumn
-                team="B"
-                name={teams.B}
-                stance={stances.B}
-                agentStates={agentStates.B}
-                latestByAgent={latestByAgent.B}
-                round={1}
-              />
-            </div>
-          </RoundView>
+            </RoundView>
+          ))}
 
-          <RoundView roundIndex={2} activeRound={activeRound}>
-            <div className="arena-floor">
-              <TeamColumn
-                team="A"
-                name={teams.A}
-                stance={stances.A}
-                agentStates={agentStates.A}
-                latestByAgent={latestByAgent.A}
-                round={2}
-              />
-              <div className="connector-col">
-                <div className="vs-divider">VS</div>
-                <div className="flow-line"></div>
-              </div>
-              <TeamColumn
-                team="B"
-                name={teams.B}
-                stance={stances.B}
-                agentStates={agentStates.B}
-                latestByAgent={latestByAgent.B}
-                round={2}
-              />
-            </div>
-          </RoundView>
-
-          <RoundView roundIndex={3} activeRound={activeRound}>
+          <RoundView roundIndex={maxRounds + 1} activeRound={activeRound}>
             <JudgesPanel truthReport={truthReport} verdict={verdict} teams={teams} />
           </RoundView>
         </>
