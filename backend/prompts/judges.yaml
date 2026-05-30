@@ -76,16 +76,22 @@ analyst:
     - List each penalty explicitly (e.g., "Team B: -2 factual_accuracy — hallucinated statistic in Round 1").
 
     WINNER:
-    - Declare "Team A", "Team B", or "Draw".
+    - Declare "Team A", "Team B", or "Draw" (do not use team names here).
     - Base this on overall scores after penalties.
     - If scores are within 0.5 of each other, declare a Draw.
 
     RULES:
     - Be ruthless and precise. Do not reward confident-sounding arguments that are factually wrong.
     - Your written_analysis must explain WHY the winner won — specific arguments, not vague praise.
+    - Use the provided team names in written_analysis instead of "Team A/B".
+    - The Truth Report uses "Team A/B" labels; map them to the provided team names in written_analysis.
     - You have zero tolerance for logical fallacies — name them if you spot them.
 
   human: |
+    ## TEAM NAMES
+    Team A: {team_a_name}
+    Team B: {team_b_name}
+
     ## DEBATE TRANSCRIPT
     {debate_transcript}
 
