@@ -16,12 +16,12 @@ ANALYST_PROMPT = ChatPromptTemplate.from_messages([
 
 analyst_chain = ANALYST_PROMPT | structured_llm
 
-def _format_transcript(debate_history: list[dict]) -> str:
+def _format_transcript(debate_history: list[dict], team_a_name: str, team_b_name: str) -> str:
     transcript = ""
     for round_entry in debate_history:
         transcript += f"\n--- ROUND {round_entry['round']} ---\n"
-        transcript += f"\nTEAM A:\n{round_entry.get('team_a', '')}\n"
-        transcript += f"\nTEAM B:\n{round_entry.get('team_b', '')}\n"
+        transcript += f"\n{team_a_name}:\n{round_entry.get('team_a', '')}\n"
+        transcript += f"\n{team_b_name}:\n{round_entry.get('team_b', '')}\n"
     return transcript
 
 def analyst_node(state: STOAState) -> dict:
@@ -31,9 +31,15 @@ def analyst_node(state: STOAState) -> dict:
 
     print("\n[Analyst] Evaluating arguments and producing final verdict...")
 
-    transcript = _format_transcript(debate_history)
+    manifest = state.get("arena_manifest") or {}
+    team_a_name = (manifest.get("team_a") or {}).get("team_name") or "Team A"
+    team_b_name = (manifest.get("team_b") or {}).get("team_name") or "Team B"
+
+    transcript = _format_transcript(debate_history, team_a_name, team_b_name)
 
     output: FinalVerdict = analyst_chain.invoke({
+        "team_a_name": team_a_name,
+        "team_b_name": team_b_name,
         "debate_transcript": transcript,
         "truth_report": truth_report
     })
