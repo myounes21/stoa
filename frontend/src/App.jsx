@@ -95,6 +95,15 @@ function useDebate() {
   const [roundBanner, setRoundBanner] = useState(null);
   const wsRef = useRef(null);
   const wsAttemptsRef = useRef(0);
+  const judgingTimeoutRef = useRef(null);
+
+  useEffect(() => {
+    return () => {
+      if (judgingTimeoutRef.current) {
+        clearTimeout(judgingTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const setAgentStatus = useCallback((team, agent, statusValue) => {
     setAgentStates(prev => ({
@@ -117,8 +126,21 @@ function useDebate() {
     }));
   }, []);
 
+  const scheduleJudgingPhase = useCallback(() => {
+    if (judgingTimeoutRef.current) {
+      clearTimeout(judgingTimeoutRef.current);
+    }
+    judgingTimeoutRef.current = setTimeout(() => {
+      setPhase(prev => (prev === "debate" ? "judging" : prev));
+    }, 0);
+  }, []);
+
   const startDebate = useCallback(() => {
     if (!query.trim()) return;
+
+    if (judgingTimeoutRef.current) {
+      clearTimeout(judgingTimeoutRef.current);
+    }
 
     setPhase("submitting");
     setStatus("Connecting to arena...");
@@ -233,6 +255,14 @@ function useDebate() {
         }
 
         if (msg.type === "round_complete") {
+          const isFinalRound = msg.data.round >= maxRounds;
+          if (isFinalRound) {
+            scheduleJudgingPhase();
+            setStatus(`Round ${msg.data.round} complete. Judges deliberating...`);
+            setRoundBanner({ from: msg.data.round, to: msg.data.round + 1 });
+            setTimeout(() => setRoundBanner(null), 2500);
+            return;
+          }
           setRound(r => {
             const nextRound = r + 1;
             roundRef.current = nextRound;
@@ -249,10 +279,14 @@ function useDebate() {
 
         if (msg.type === "truth_report") {
           setTruthReport(msg.data);
+          setPhase("judging");
           setStatus("Judges deliberating...");
         }
 
         if (msg.type === "verdict") {
+          if (judgingTimeoutRef.current) {
+            clearTimeout(judgingTimeoutRef.current);
+          }
           setVerdict(msg.data);
           setPhase("verdict");
           setStatus("Debate complete.");
@@ -295,7 +329,7 @@ function useDebate() {
 
     wsAttemptsRef.current = 0;
     connectNext();
-  }, [appendAgentHistory, query, setAgentOutput, setAgentStatus]);
+  }, [appendAgentHistory, query, scheduleJudgingPhase, setAgentOutput, setAgentStatus]);
 
   return {
     phase,
@@ -560,6 +594,7 @@ function RoundView({ roundIndex, activeRound, children }) {
 }
 
 function JudgesPanel({ truthReport, verdict, teams }) {
+  const isJudging = !verdict;
   const claims = toArray(truthReport?.claims);
   const normalizedClaims = claims.map(claim => ({
     ...claim,
@@ -586,6 +621,12 @@ function JudgesPanel({ truthReport, verdict, teams }) {
       <div className="judge-header">
         <div className="judge-title">Judge Panel</div>
         <div className="judge-subtitle">Isolated · Transcript only · Gemini 2.5 Pro</div>
+        {isJudging && (
+          <div className="judge-pending">
+            <span className="judge-pending-spinner" aria-hidden="true" />
+            <span>Judges are reviewing the transcript and compiling the final verdict.</span>
+          </div>
+        )}
       </div>
 
       <div className="judge-grid">
@@ -754,7 +795,7 @@ export default function App() {
 
   useEffect(() => {
     const verdictRound = maxRounds + 1;
-    if (phase === "verdict") {
+    if (phase === "verdict" || phase === "judging") {
       setActiveRound(verdictRound);
       return;
     }
@@ -888,7 +929,7 @@ export default function App() {
         </div>
       )}
 
-      {(phase === "debate" || phase === "verdict") && (
+      {(phase === "debate" || phase === "judging" || phase === "verdict") && (
         <>
           <div className="header">
             <div className="header-eyebrow">Multi-Agent Adversarial Framework</div>
