@@ -1,7 +1,7 @@
 import json
 from backend.models.schemas import CriticDecision
 from backend.models.state import STOAState
-from backend.agents.team.speaker import speaker_node_a
+from backend.agents.team.speaker import make_speaker
 
 def main():
     print("=" * 50)
@@ -64,31 +64,36 @@ def main():
         "current_round": 1,
         "max_rounds": 2,
         "debate_history": [],
-        "team_a_strategy": json.dumps(mock_strategy),
-        "team_a_evidence": json.dumps(mock_evidence),
-        "team_a_critic_status": "APPROVED",
-        "team_a_critic_decision": None,
-        "team_b_critic_decision": None,
-        "team_a_retry_count": 0,
-        "team_a_weakness_flag": False,
-        "team_a_argument": None,
-        "team_b_strategy": None,
-        "team_b_evidence": None,
-        "team_b_critic_status": None,
-        "team_b_retry_count": 0,
-        "team_b_weakness_flag": False,
-        "team_b_argument": None,
+        "teams": {
+            "A": {
+                "strategy": json.dumps(mock_strategy),
+                "evidence": json.dumps(mock_evidence),
+                "critic_status": "APPROVED",
+                "critic_decision": None,
+                "retry_count": 0,
+                "weakness_flag": False,
+                "argument": None
+            },
+            "B": {
+                "strategy": None,
+                "evidence": None,
+                "critic_status": None,
+                "critic_decision": None,
+                "retry_count": 0,
+                "weakness_flag": False,
+                "argument": None
+            }
+        },
         "truth_report": None,
         "final_verdict": None,
         "winner": None
     }
 
-    # --- Test 1: No weak points ---
     print("\nTEST 1: No Critic weak points (baseline)")
     print("-" * 40)
     try:
-        result = speaker_node_a(base_state)
-        argument = result.get("team_a_argument")
+        result = make_speaker("A")(base_state)
+        argument = result.get("teams", {}).get("A", {}).get("argument")
         if argument:
             print("\n[TEAM A ARGUMENT]\n")
             print(argument)
@@ -98,7 +103,6 @@ def main():
         print(f"Error: {e}")
         raise
 
-    # --- Test 2: With weak points ---
     print("\nTEST 2: With Critic weak points")
     print("-" * 40)
     mock_critic_decision = CriticDecision(
@@ -113,12 +117,18 @@ def main():
 
     state_with_weakpoints: STOAState = {
         **base_state,
-        "team_a_critic_decision": mock_critic_decision.model_dump_json()
+        "teams": {
+            "A": {
+                **base_state["teams"]["A"],
+                "critic_decision": mock_critic_decision.model_dump_json()
+            },
+            "B": base_state["teams"]["B"]
+        }
     }
 
     try:
-        result = speaker_node_a(state_with_weakpoints)
-        argument = result.get("team_a_argument")
+        result = make_speaker("A")(state_with_weakpoints)
+        argument = result.get("teams", {}).get("A", {}).get("argument")
         if argument:
             print("\n[TEAM A ARGUMENT - WITH WEAK POINTS]\n")
             print(argument)
