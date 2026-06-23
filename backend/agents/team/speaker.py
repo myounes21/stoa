@@ -28,10 +28,8 @@ def get_opponent_argument(state: STOAState, team_id: str) -> str:
 
     last_round = history[-1]
 
-    if team_id == "A":
-        return last_round.get("team_b", "No opponent argument available.")
-    else:
-        return last_round.get("team_a", "No opponent argument available.")
+    opponent_id = "B" if team_id == "A" else "A"
+    return last_round.get(f"team_{opponent_id.lower()}", "No opponent argument available.")
 
 
 def run_speaker(state: STOAState, team_id: str) -> dict:
@@ -39,12 +37,12 @@ def run_speaker(state: STOAState, team_id: str) -> dict:
     manifest = state["arena_manifest"]
     team_data = manifest["team_a"] if team_id == "A" else manifest["team_b"]
 
-    strategy_json = state["team_a_strategy"] if team_id == "A" else state["team_b_strategy"]
-    evidence_json = state["team_a_evidence"] if team_id == "A" else state["team_b_evidence"]
+    team_state = state.get("teams", {}).get(team_id, {})
+    strategy_json = team_state.get("strategy")
+    evidence_json = team_state.get("evidence")
     opponent_argument = get_opponent_argument(state, team_id)
 
-    # Extract weak_points from Critic decision
-    critic_decision_json = state.get("team_a_critic_decision") if team_id == "A" else state.get("team_b_critic_decision")
+    critic_decision_json = team_state.get("critic_decision")
     weak_points = []
     if critic_decision_json:
         critic_decision = CriticDecision.model_validate_json(critic_decision_json)
@@ -67,15 +65,10 @@ def run_speaker(state: STOAState, team_id: str) -> dict:
 
     print(f"[Speaker {team_id}] Argument delivered.")
 
-    if team_id == "A":
-        return {"team_a_argument": output.argument}
-    else:
-        return {"team_b_argument": output.argument}
-
-# LangGraph Node Wrappers
-def speaker_node_a(state: STOAState) -> dict:
-    return run_speaker(state, "A")
+    return {"teams": {team_id: {"argument": output.argument}}}
 
 
-def speaker_node_b(state: STOAState) -> dict:
-    return run_speaker(state, "B")
+def make_speaker(team_id: str):
+    def speaker_node(state: STOAState) -> dict:
+        return run_speaker(state, team_id)
+    return speaker_node
