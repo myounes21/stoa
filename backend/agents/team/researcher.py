@@ -24,8 +24,8 @@ def run_researcher(state: STOAState, team_id: str) -> dict:
     manifest = state["arena_manifest"]
     team_data = manifest["team_a"] if team_id == "A" else manifest["team_b"]
 
-    # 1. Get the strategy document
-    strategy_json = state.get("team_a_strategy") if team_id == "A" else state.get("team_b_strategy")
+    team_state = state.get("teams", {}).get(team_id, {})
+    strategy_json = team_state.get("strategy")
     strategy_update = None
     if not strategy_json:
         strategy = StrategyDocument(
@@ -51,8 +51,7 @@ def run_researcher(state: STOAState, team_id: str) -> dict:
             strategy_update = strategy_json
             print(f"\n[Researcher {team_id}] Invalid strategy document ({exc}). Using fallback.")
 
-    # 2. Determine search queries — use retry_directive if this is a retry
-    critic_decision_json = state.get("team_a_critic_decision") if team_id == "A" else state.get("team_b_critic_decision")
+    critic_decision_json = team_state.get("critic_decision")
 
     queries = strategy.research_directives
     if critic_decision_json:
@@ -76,7 +75,6 @@ def run_researcher(state: STOAState, team_id: str) -> dict:
     else:
         search_context = perform_research(queries)
 
-    # 3. Synthesize evidence
     output: EvidenceDocument = researcher_chain.invoke({
         "team_name": team_data["team_name"],
         "topic": manifest["topic"],
@@ -85,22 +83,13 @@ def run_researcher(state: STOAState, team_id: str) -> dict:
         "research_directives": json.dumps(queries, indent=2)
     })
 
-    if team_id == "A":
-        update = {"team_a_evidence": output.model_dump_json()}
-        if strategy_update:
-            update["team_a_strategy"] = strategy_update
-        return update
-    else:
-        update = {"team_b_evidence": output.model_dump_json()}
-        if strategy_update:
-            update["team_b_strategy"] = strategy_update
-        return update
+    team_update = {"evidence": output.model_dump_json()}
+    if strategy_update:
+        team_update["strategy"] = strategy_update
+    return {"teams": {team_id: team_update}}
 
 
-# LangGraph Node Wrappers
-def researcher_node_a(state: STOAState) -> dict:
-    return run_researcher(state, "A")
-
-
-def researcher_node_b(state: STOAState) -> dict:
-    return run_researcher(state, "B")
+def make_researcher(team_id: str):
+    def researcher_node(state: STOAState) -> dict:
+        return run_researcher(state, team_id)
+    return researcher_node
