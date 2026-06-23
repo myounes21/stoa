@@ -124,7 +124,7 @@ class TeamScores(BaseModel):
     overall: float
 
 class FinalVerdict(BaseModel):
-    winner: str                  # "Team A" / "Team B" / "Draw"
+    winner: str
     team_a_scores: TeamScores
     team_b_scores: TeamScores
     written_analysis: str
