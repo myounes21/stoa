@@ -7,7 +7,6 @@ def main():
     print("STOA DISPATCHER TEST")
     print("=" * 50)
 
-    # --- Test 1: Clear query (should fire immediately) ---
     print("\nTEST 1: Clear query (expecting no clarification)")
     print("-" * 40)
 
@@ -18,20 +17,26 @@ def main():
         "clarification_response": None,
         "current_round": 0,
         "max_rounds": 2,
-        "team_a_strategy": None,
-        "team_a_evidence": None,
-        "team_a_critic_status": None,
-        "team_a_critic_decision": None,
-        "team_b_critic_decision": None,
-        "team_a_retry_count": 0,
-        "team_a_weakness_flag": False,
-        "team_a_argument": None,
-        "team_b_strategy": None,
-        "team_b_evidence": None,
-        "team_b_critic_status": None,
-        "team_b_retry_count": 0,
-        "team_b_weakness_flag": False,
-        "team_b_argument": None,
+        "teams": {
+            "A": {
+                "strategy": None,
+                "evidence": None,
+                "critic_status": None,
+                "critic_decision": None,
+                "retry_count": 0,
+                "weakness_flag": False,
+                "argument": None
+            },
+            "B": {
+                "strategy": None,
+                "evidence": None,
+                "critic_status": None,
+                "critic_decision": None,
+                "retry_count": 0,
+                "weakness_flag": False,
+                "argument": None
+            }
+        },
         "debate_history": [],
         "truth_report": None,
         "final_verdict": None,
@@ -52,7 +57,6 @@ def main():
         print(f"Error: {e}")
         raise
 
-    # --- Test 2: Ambiguous query (should ask for clarification) ---
     print("\nTEST 2: Ambiguous query (expecting clarification)")
     print("-" * 40)
 
