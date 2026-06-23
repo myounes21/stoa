@@ -9,7 +9,7 @@ class Settings(BaseSettings):
 
 
     GROQ_API_KEY : str
-    GROQ_LLM_MODEL: str = "llama-3.3-70b-versatile" #llama-3.1-8b-instant #llama-3.3-70b-versatile
+    GROQ_LLM_MODEL: str = "llama-3.3-70b-versatile"
 
     GEMINI_API_KEY: str
     GEMINI_LLM_MODEL: str = "gemini-2.5-flash"
