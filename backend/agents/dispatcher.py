@@ -38,8 +38,14 @@ def dispatcher_node(state: STOAState) -> dict:
         "current_round": 1,
         "max_rounds": settings.MAX_ROUNDS,
         "debate_history": [],
-        "team_a_retry_count": 0,
-        "team_b_retry_count": 0,
-        "team_a_weakness_flag": False,
-        "team_b_weakness_flag": False,
+        "teams": {
+            "A": {
+                "retry_count": 0,
+                "weakness_flag": False
+            },
+            "B": {
+                "retry_count": 0,
+                "weakness_flag": False
+            }
+        }
     }
