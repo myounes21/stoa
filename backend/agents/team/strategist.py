@@ -54,16 +54,10 @@ def run_strategist(state: STOAState, team_id: str) -> dict:
     if output is None:
         raise ValueError(f"Strategist (Team {team_id}) returned None.")
 
-    if team_id == "A":
-        return {"team_a_strategy": output.model_dump_json()}
-    else:
-        return {"team_b_strategy": output.model_dump_json()}
+    return {"teams": {team_id: {"strategy": output.model_dump_json()}}}
 
 
-# LangGraph Node Wrappers
-def strategist_node_a(state: STOAState) -> dict:
-    return run_strategist(state, "A")
-
-
-def strategist_node_b(state: STOAState) -> dict:
-    return run_strategist(state, "B")
+def make_strategist(team_id: str):
+    def strategist_node(state: STOAState) -> dict:
+        return run_strategist(state, team_id)
+    return strategist_node
