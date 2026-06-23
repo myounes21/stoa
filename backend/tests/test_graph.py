@@ -16,20 +16,26 @@ def main():
         "current_round": 1,
         "max_rounds": 2,
         "debate_history": [],
-        "team_a_strategy": None,
-        "team_a_evidence": None,
-        "team_a_critic_status": None,
-        "team_a_critic_decision": None,
-        "team_a_retry_count": 0,
-        "team_a_weakness_flag": False,
-        "team_a_argument": None,
-        "team_b_strategy": None,
-        "team_b_evidence": None,
-        "team_b_critic_status": None,
-        "team_b_critic_decision": None,
-        "team_b_retry_count": 0,
-        "team_b_weakness_flag": False,
-        "team_b_argument": None,
+        "teams": {
+            "A": {
+                "strategy": None,
+                "evidence": None,
+                "critic_status": None,
+                "critic_decision": None,
+                "retry_count": 0,
+                "weakness_flag": False,
+                "argument": None
+            },
+            "B": {
+                "strategy": None,
+                "evidence": None,
+                "critic_status": None,
+                "critic_decision": None,
+                "retry_count": 0,
+                "weakness_flag": False,
+                "argument": None
+            }
+        },
         "truth_report": None,
         "final_verdict": None,
         "winner": None
@@ -39,7 +45,6 @@ def main():
         print("Invoking STOA graph...\n")
         final_state = stoa_graph.invoke(initial_state)
 
-        #  Debate History
         print("\n" + "=" * 60)
         print("DEBATE TRANSCRIPT")
         print("=" * 60)
@@ -48,9 +53,8 @@ def main():
             print(f"\n[TEAM A]\n{round_entry.get('team_a', '')}")
             print(f"\n[TEAM B]\n{round_entry.get('team_b', '')}")
 
-        # --- Truth Report ---
         print("\n" + "=" * 60)
-        print("🔍 TRUTH REPORT")
+        print("TRUTH REPORT")
         print("=" * 60)
         truth_report_json = final_state.get("truth_report")
         if truth_report_json:
@@ -58,7 +62,6 @@ def main():
         else:
             print("No truth report generated.")
 
-        #  Final Verdict
         print("\n" + "=" * 60)
         print(" FINAL VERDICT")
         print("=" * 60)
@@ -68,10 +71,9 @@ def main():
         else:
             print("No final verdict generated.")
 
-        # Winner Banner
         winner = final_state.get("winner")
         if winner:
-            print(f"\n🏆 WINNER: {winner}")
+            print(f"\nWINNER: {winner}")
 
     except Exception as e:
         print(f"\nError: {e}")
