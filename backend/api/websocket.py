@@ -16,20 +16,16 @@ def _build_initial_state(query: str) -> STOAState:
         "current_round": 1,
         "max_rounds": 2,
         "debate_history": [],
-        "team_a_strategy": None,
-        "team_a_evidence": None,
-        "team_a_critic_status": None,
-        "team_a_critic_decision": None,
-        "team_a_retry_count": 0,
-        "team_a_weakness_flag": False,
-        "team_a_argument": None,
-        "team_b_strategy": None,
-        "team_b_evidence": None,
-        "team_b_critic_status": None,
-        "team_b_critic_decision": None,
-        "team_b_retry_count": 0,
-        "team_b_weakness_flag": False,
-        "team_b_argument": None,
+        "teams": {
+            "A": {
+                "retry_count": 0,
+                "weakness_flag": False
+            },
+            "B": {
+                "retry_count": 0,
+                "weakness_flag": False
+            }
+        },
         "truth_report": None,
         "final_verdict": None,
         "winner": None,
@@ -89,8 +85,8 @@ def _format_node_update(node_name: str, output: dict) -> dict | None:
             }
 
     if node_name in ("strategist_a", "strategist_b"):
-        strategy = output.get("team_a_strategy") or output.get("team_b_strategy")
         team = "A" if node_name == "strategist_a" else "B"
+        strategy = output.get("teams", {}).get(team, {}).get("strategy")
         if strategy:
             return {
                 "type": "agent_output",
@@ -98,8 +94,8 @@ def _format_node_update(node_name: str, output: dict) -> dict | None:
             }
 
     if node_name in ("researcher_a", "researcher_b"):
-        evidence = output.get("team_a_evidence") or output.get("team_b_evidence")
         team = "A" if node_name == "researcher_a" else "B"
+        evidence = output.get("teams", {}).get(team, {}).get("evidence")
         if evidence:
             return {
                 "type": "agent_output",
@@ -107,9 +103,9 @@ def _format_node_update(node_name: str, output: dict) -> dict | None:
             }
 
     if node_name in ("critic_a", "critic_b"):
-        decision = output.get("team_a_critic_decision") or output.get("team_b_critic_decision")
-        status = output.get("team_a_critic_status") or output.get("team_b_critic_status")
         team = "A" if node_name == "critic_a" else "B"
+        decision = output.get("teams", {}).get(team, {}).get("critic_decision")
+        status = output.get("teams", {}).get(team, {}).get("critic_status")
         if decision:
             return {
                 "type": "agent_output",
@@ -117,8 +113,8 @@ def _format_node_update(node_name: str, output: dict) -> dict | None:
             }
 
     if node_name in ("speaker_a", "speaker_b"):
-        argument = output.get("team_a_argument") or output.get("team_b_argument")
         team = "A" if node_name == "speaker_a" else "B"
+        argument = output.get("teams", {}).get(team, {}).get("argument")
         if argument:
             return {
                 "type": "argument",
