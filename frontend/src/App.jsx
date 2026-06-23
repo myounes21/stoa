@@ -632,7 +632,7 @@ function JudgesPanel({ truthReport, verdict, teams }) {
       <div className="judge-grid">
         <div className="judge-card">
           <div className="judge-card-header">
-            <div className="judge-icon">⚖</div>
+            <div className="judge-icon"></div>
             <div>
               <div className="judge-card-name">Clerk</div>
               <div className="judge-card-sub">Fact verifier · Tavily</div>
@@ -652,7 +652,7 @@ function JudgesPanel({ truthReport, verdict, teams }) {
 
         <div className="judge-card">
           <div className="judge-card-header">
-            <div className="judge-icon">🧠</div>
+            <div className="judge-icon"></div>
             <div>
               <div className="judge-card-name">Analyst</div>
               <div className="judge-card-sub">Logic scorer · Truth Report input</div>
@@ -853,7 +853,7 @@ export default function App() {
                 <span className="stat-label">winner</span>
               </div>
               <div className="stat-cell">
-                <span className="stat-icon teal">⚡</span>
+                <span className="stat-icon teal"></span>
                 <span className="stat-label">real-time</span>
               </div>
             </div>
